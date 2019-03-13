@@ -7,12 +7,7 @@ from util import *
 
 
 
-def SVDBaseline(k=40, load = 0, save = 0):
-    if load:
-        data = np.load(parameters.MATMEAN_PATH)
-    else:
-        data = LoadMeanImpute(save)
-
+def SVDBaseline(data, k=40, load = 0, save = 0):
     if load:
         u = np.load('./cache/svdu.npy')
         s = np.load('./cache/svds.npy')
@@ -43,7 +38,12 @@ def SVDBaseline(k=40, load = 0, save = 0):
     recondata = np.dot(u[:, :1000] * sprime, vh)
     WriteToCSV(recondata)
 
-
+def main():
+    if load:
+        data = np.load(parameters.MATMEAN_PATH)
+    else:
+        data = LoadMeanImpute(save)
+    
 
 if __name__ == "__main__":
     SVDBaseline(40, load = 0, save = 0)

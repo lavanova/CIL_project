@@ -3,6 +3,7 @@ import parameters
 import csv
 import pandas as pd
 from sklearn.impute import SimpleImputer
+from scipy.sparse import csr_matrix
 
 '''
 str -> int,int
@@ -62,4 +63,24 @@ def LoadMeanImpute(save = 0, outpath = parameters.MATMEAN_PATH, inpath = paramet
     if save:
         np.save(outpath, newdata)
     print("Load mean imputeing complete")
+    return newdata
+
+'''
+[int, outpath, inpath] -> np.array (10000*1000) in Compressed row array format
+'''
+def LoadCSR(save = 0, outpath = parameters.MATCSR_PATH, inpath = parameters.RAWDATA_PATH):
+    rawdata = pd.read_csv(inpath)
+    row = []
+    col = []
+    data = []
+    for i in rawdata.values:
+        r, c = GetRC(i[0])
+        row.append(r)
+        col.append(c)
+        data.append(i[1])
+    newdata = csr_matrix((data, (row, col)), shape=(parameters.NROWS, parameters.NCOLS))
+    #print(newdata.toarray().shape)
+    # print( np.mean(data) )
+    # print( np.std(data) )
+    data = np.array(data)
     return newdata
