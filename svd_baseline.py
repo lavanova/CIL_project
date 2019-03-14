@@ -39,11 +39,14 @@ def SVDBaseline(data, k=40, load = 0, save = 0):
     WriteToCSV(recondata)
 
 def main():
+    load = 1
     if load:
         data = np.load(parameters.MATMEAN_PATH)
     else:
         data = LoadMeanImpute(save)
-    
+    SVDBaseline(data, k=40, load = 0, save = 0)
+
+
 
 if __name__ == "__main__":
-    SVDBaseline(40, load = 0, save = 0)
+    main()

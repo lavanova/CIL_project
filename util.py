@@ -39,6 +39,22 @@ def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH): # expect the input to be
     df.to_csv(path,index=False)
     print("writing completed")
 
+
+def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
+    outpathmask = parameters.MASK_PATH, inpath = parameters.RAWDATA_PATH):
+    rawdata = pd.read_csv(inpath)
+    data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    total = 0
+    count = 0
+    for i in rawdata.values:
+        r, c = GetRC(i[0])
+        data[r,c] = i[1]
+        mask[r,c] = 1
+    return data, mask
+
+
+
 '''
 [int, outpath, inpath] -> np.array (10000*1000)
 Load data from the file position, default: parameters.RAWDATA_PATH # './data/data_train.csv'
@@ -48,18 +64,18 @@ Save data to the outpath, default: parameters.MATMEAN_PATH # MATMEAN_PATH = './c
 '''
 def LoadMeanImpute(save = 0, outpath = parameters.MATMEAN_PATH, inpath = parameters.RAWDATA_PATH):
     rawdata = pd.read_csv(inpath)
-    datamat = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
     total = 0
     count = 0
     for i in rawdata.values:
         r, c = GetRC(i[0])
-        datamat[r,c] = i[1]
+        data[r,c] = i[1]
         total += i[1]
         count += 1
     fill = total/float(count) # global mean
     imputer = SimpleImputer(missing_values=0, strategy='constant', fill_value=fill)
-    imputer = imputer.fit(datamat)
-    newdata = imputer.transform(datamat)
+    imputer = imputer.fit(data)
+    newdata = imputer.transform(data)
     if save:
         np.save(outpath, newdata)
     print("Load mean imputeing complete")
