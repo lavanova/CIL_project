@@ -7,20 +7,11 @@ from util import *
 
 
 
-def SVDBaseline(data, k=40, load = 0, save = 0):
-    if load:
-        u = np.load('./cache/svdu.npy')
-        s = np.load('./cache/svds.npy')
-        vh = np.load('./cache/svdvh.npy')
-    else:
-        print("start svd")
-        u, s, vh = np.linalg.svd(data)
-        #print (u.shape, s.shape, vh.shape)
-        if save:
-            np.save('./cache/svdu.npy', u)
-            np.save('./cache/svds.npy', s)
-            np.save('./cache/svdvh.npy', vh)
-        print("finish svd")
+def SVDBaseline(data, k=40):
+    print("SVD Baseline: ")
+    print("start svd")
+    u, s, vh = np.linalg.svd(data)
+    print("finish svd")
     # k = 0
     # totalsum = np.sum(np.square(s))
     # print(s)
@@ -39,12 +30,8 @@ def SVDBaseline(data, k=40, load = 0, save = 0):
     WriteToCSV(recondata)
 
 def main():
-    load = 1
-    if load:
-        data = np.load(parameters.MATMEAN_PATH)
-    else:
-        data = LoadMeanImpute(save)
-    SVDBaseline(data, k=40, load = 0, save = 0)
+    data = LoadHeuristicFill()
+    SVDBaseline(data, k=40)
 
 
 

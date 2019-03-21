@@ -47,6 +47,7 @@ def ALS_iterV(data, mask, U, V, regularizer=0.01):
 
 
 def calc_cost(data, mask, U, V):
+    print((U.T @ V))
     return np.sum( np.square(mask*(data - (U.T @ V))) ) / np.sum(mask)
 
 '''
@@ -56,8 +57,8 @@ def ALS(data, mask, epochs = 15, factors=50, regularizer=0.01):
     n = parameters.NROWS
     m = parameters.NCOLS
     k = factors
-    U = np.random.normal(0, 1/factors, (k, n))
-    V = np.random.normal(0, 1/factors, (k, m))
+    U = np.random.normal(1, 1, (k, n))
+    V = np.random.normal(1, 1, (k, m))
 
     for i in range(epochs):
         print("Iteration: " + str(i))
