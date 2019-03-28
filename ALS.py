@@ -36,7 +36,8 @@ def ALS_iterU(data, mask, U, V, regularizer=0.01):
     m = V.shape[1]
     k = V.shape[0]
     for i in range(n):
-        mat = np.linalg.inv( (V @ np.transpose(V)) + regularizer*np.identity(k) ) # k*k
+        Vm = ( mask[i,:]*V )
+        mat = np.linalg.inv(  Vm @ Vm.T + regularizer*np.identity(k) ) # k*k
         val = V @ (mask[i, :]*data[i, :]).T  # k*1
         U[:,i] = mat @ val
     return U
@@ -67,7 +68,8 @@ def ALS(data, mask, epochs = 15, factors=50, regularizer=0.01):
         ALS_iterV(data, mask, U, V, regularizer=0.01)
         print(calc_cost(data, mask, U, V))
 
-    recondata = data
+    recondata = np.clip(U.T @ V, a_min = 1, a_max = 5)
+    print(recondata)
     WriteToCSV(recondata)
 
 
@@ -78,7 +80,7 @@ def main():
         mask = np.load(parameters.MASK_PATH)
     else:
         data, mask = LoadDataMask()
-    ALS(data, mask, epochs=15, factors=60, regularizer=0.01)
+    ALS(data, mask, epochs=5, factors=40, regularizer=0.01)
 
 
 if __name__ == "__main__":
