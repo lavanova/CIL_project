@@ -8,5 +8,7 @@ MASK_PATH = './cache/mask.npy'
 MATMEAN_PATH = './cache/matimpute.npy'
 MATCSR_PATH = './cache/matcsr.npy'
 
+MASK_TRAIN_PATH = './cache/train_mask.npy'
+MASK_VAL_PATH = './cache/val_mask.npy'
 NCOLS = 1000
 NROWS = 10000

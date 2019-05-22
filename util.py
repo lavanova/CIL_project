@@ -4,6 +4,7 @@ import csv
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from scipy.sparse import csr_matrix
+import random
 
 '''
 str -> int,int
@@ -56,6 +57,28 @@ def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
 
 
 '''
+split data into training and validation
+valper: percentage of the validation data
+'''
+def LoadTrainValDataMask(valper=0.15, inpath = parameters.RAWDATA_PATH):
+    rawdata = pd.read_csv(inpath)
+    train_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    train_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    val_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    val_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    for i in rawdata.values:
+        r, c = GetRC(i[0])
+        dice = random.uniform(0, 1)
+        if dice < valper:
+            val_data[r,c] = i[1]
+            val_mask[r,c] = 1
+        else:
+            train_data[r,c] = i[1]
+            train_mask[r,c] = 1
+    print("Load train validation data mask complete")
+    return train_data, train_mask, val_data, val_mask
+
+'''
 [int, outpath, inpath] -> np.array (10000*1000)
 Load data from the file position, default: parameters.RAWDATA_PATH # './data/data_train.csv'
 Impute the missing values to global mean
@@ -76,8 +99,7 @@ def LoadMeanImpute(save = 0, outpath = parameters.MATMEAN_PATH, inpath = paramet
 '''
 Load and compute heuristic average
 '''
-def LoadHeuristicFill(save = 0, outpath = parameters.MATMEAN_PATH, inpath = parameters.RAWDATA_PATH):
-    data, mask = LoadDataMask()
+def HeuristicFill(data, mask):
     global_mean = float(np.sum(data))/np.sum(mask)
     col_mean = ( np.sum(data, axis=0) /np.sum(mask, axis=0) ).reshape(1, parameters.NCOLS) # 1 * 1000
     col_sum = np.sum(mask, axis=0).reshape(1, parameters.NCOLS)    # 1000 * 1
@@ -85,6 +107,18 @@ def LoadHeuristicFill(save = 0, outpath = parameters.MATMEAN_PATH, inpath = para
     row_sum = np.sum(mask, axis=1).reshape(parameters.NROWS, 1)    # 1000 * 1
     heur_fill = (1 - mask) * (col_mean * 0.5 + row_mean * 0.5) + data
     return heur_fill
+
+def LoadHeuristicFill():
+    # data, mask,_,_ = LoadTrainValDataMask()
+    data, mask = LoadDataMask()
+    return HeuristicFill(data, mask)
+
+'''
+Dense implementation of validation cost
+'''
+def valLoss(pred, valdata, valmask):
+    assert(valdata.shape == pred.shape), "The input matrix dimensions mismatch"
+    return np.sum( (valmask * (valdata - pred)) ** 2 ) / np.sum(valmask)
 
 '''
 [int, outpath, inpath] -> np.array (10000*1000) in Compressed row array format
@@ -111,3 +145,8 @@ if __name__ == "__main__":
     data = LoadHeuristicFill()
     print(data.shape)
     print(data)
+
+    # pred = np.array([[1,2],[3,4]])
+    # valdata = np.array([[1,1],[1,1]])
+    # valmask = np.array([[0,1],[0,1]])
+    # print(valLoss(pred, valdata, valmask))
