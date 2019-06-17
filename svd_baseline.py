@@ -3,7 +3,7 @@ import parameters
 import csv
 import pandas as pd
 import imp
-from util import *
+from utils import *
 
 
 
@@ -27,13 +27,12 @@ def SVDBaseline(data, k=40):
     mask = [1] * k + [0] * (1000 - k)
     sprime = mask*s
     recondata = np.dot(u[:, :1000] * sprime, vh)
-    WriteToCSV(recondata)
+    return recondata
 
-def main():
+def main(path='svd_baseline.csv'):
     data = LoadHeuristicFill()
-    SVDBaseline(data, k=40)
-
-
+    recondata = SVDBaseline(data, k=40)
+    WriteToCSV(recondata, path=path)
 
 if __name__ == "__main__":
-    main()
+    main(path='svd_baseline.csv')

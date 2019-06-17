@@ -1,8 +1,8 @@
 import scipy
 import numpy as np
 from scipy.sparse import csr_matrix
-import imp
-from util import *
+from utils import *
+from tqdm import trange
 
 '''
 import implicit
@@ -35,7 +35,7 @@ def ALS_iterU(data, mask, U, V, regularizer=0.01):
     n = U.shape[1]
     m = V.shape[1]
     k = V.shape[0]
-    for i in range(n):
+    for i in trange(n):
         Vm = ( mask[i,:]*V )
         mat = np.linalg.inv(  Vm @ Vm.T + regularizer*np.identity(k) ) # k*k
         val = V @ (mask[i, :]*data[i, :]).T  # k*1
@@ -48,7 +48,7 @@ def ALS_iterV(data, mask, U, V, regularizer=0.01):
 
 
 def calc_cost(data, mask, U, V):
-    print((U.T @ V))
+    # print((U.T @ V))
     return np.sum( np.square(mask*(data - (U.T @ V))) ) / np.sum(mask)
 
 '''
@@ -69,19 +69,18 @@ def ALS(data, mask, epochs = 15, factors=50, regularizer=0.01):
         print(calc_cost(data, mask, U, V))
 
     recondata = np.clip(U.T @ V, a_min = 1, a_max = 5)
-    print(recondata)
-    WriteToCSV(recondata)
+    return recondata
 
 
-def main():
+def main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv'):
     load = 0
     if load:
         data = np.load(parameters.MATRAW_PATH)
         mask = np.load(parameters.MASK_PATH)
     else:
         data, mask = LoadDataMask()
-    ALS(data, mask, epochs=5, factors=40, regularizer=0.01)
-
+    recondata = ALS(data, mask, epochs=epochs, factors=factors, regularizer=regularizer)
+    WriteToCSV(recondata, path=path)
 
 if __name__ == "__main__":
-    main()
+    main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv')
