@@ -97,28 +97,19 @@ def LoadMeanImpute(save = 0, outpath = parameters.MATMEAN_PATH, inpath = paramet
     return imputed_data
 
 '''
-Load and compute heuristic average
-'''
-def HeuristicFill(data, mask):
-    global_mean = float(np.sum(data))/np.sum(mask)
-    col_mean = ( np.sum(data, axis=0) /np.sum(mask, axis=0) ).reshape(1, parameters.NCOLS) # 1 * 1000
-    col_sum = np.sum(mask, axis=0).reshape(1, parameters.NCOLS)    # 1000 * 1
-    row_mean = ( np.sum(data, axis=1)/np.sum(mask, axis=1) ).reshape(parameters.NROWS, 1) # 10000 * 1
-    row_sum = np.sum(mask, axis=1).reshape(parameters.NROWS, 1)    # 1000 * 1
-    heur_fill = (1 - mask) * (col_mean * 0.5 + row_mean * 0.5) + data
-    return heur_fill
-
-def LoadHeuristicFill():
-    # data, mask,_,_ = LoadTrainValDataMask()
-    data, mask = LoadDataMask()
-    return HeuristicFill(data, mask)
-
-'''
 Dense implementation of validation cost
+The loss is MSE
 '''
-def valLoss(pred, valdata, valmask):
-    assert(valdata.shape == pred.shape), "The input matrix dimensions mismatch"
-    return np.sum( (valmask * (valdata - pred)) ** 2 ) / np.sum(valmask)
+def getMSE(pred, data, mask):
+    assert(data.shape == pred.shape), "The input matrix dimensions mismatch"
+    return np.sum( (mask * (data - pred)) ** 2 ) / np.sum(mask)
+
+'''
+Get RMSE error of the validation data
+'''
+def getRMSE(pred, data, mask):
+    mse = getMSE(pred, data, mask)
+    return np.sqrt(mse)
 
 '''
 [int, outpath, inpath] -> np.array (10000*1000) in Compressed row array format

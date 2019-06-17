@@ -49,7 +49,7 @@ def ALS_iterV(data, mask, U, V, regularizer=0.01):
 
 def calc_cost(data, mask, U, V):
     # print((U.T @ V))
-    return np.sum( np.square(mask*(data - (U.T @ V))) ) / np.sum(mask)
+    return getRMSE((U.T @ V), data, mask)
 
 '''
 Dense implementation of ALS
@@ -79,8 +79,8 @@ def main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv'):
         mask = np.load(parameters.MASK_PATH)
     else:
         data, mask = LoadDataMask()
-    recondata = ALS(data, mask, epochs=epochs, factors=factors, regularizer=regularizer)
-    WriteToCSV(recondata, path=path)
+    pred = ALS(data, mask, epochs=epochs, factors=factors, regularizer=regularizer)
+    WriteToCSV(pred, path=path)
 
 if __name__ == "__main__":
     main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv')
