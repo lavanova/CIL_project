@@ -1,0 +1,74 @@
+import os
+import csv
+import numpy as np
+import tensorflow as tf
+data_path = '../data'
+def create_dataloader_train(valid_ratio=0.1, batch_size=256):
+    row_col = []
+    label = []
+    max_row = 1
+    max_col = 1
+    with open(os.path.join(data_path, "data_train.csv")) as f:
+        reader = csv.reader(f, delimiter=',')
+        for i, sample in enumerate(reader):
+            if i == 0:
+                continue
+            if sample == None or sample == "":
+                continue
+            row = int(sample[0].split('_')[0][1:])
+            max_row = max(max_row, row)
+            col = int(sample[0].split('_')[1][1:])
+            max_col = max(max_col, col)
+            row_col.append([row, col])
+            rating = int(sample[1])
+            label.append(rating)
+    
+    row_col = np.asarray(row_col)
+    label = np.asarray(label, dtype=np.float32).reshape((-1, 1)) #reshape??
+    assert row_col.shape[0] == label.shape[0], "error sample number doesn't match with label number"
+
+    sample_num = label.shape[0]
+    index = np.random.permutation(sample_num)
+    row_col = row_col[index]
+    label = label[index]
+
+    valid_num = int(sample_num * valid_ratio)
+    #valid_sample = row_col[0: valid_num, :]
+    #valid_label = label[0: valid_num, :]
+    valid_sample = np.copy(row_col)
+    valid_label = np.copy(label)
+
+    #train_sample = row_col[valid_num:, :]
+    #train_label = label[valid_num:, :]
+    train_sample = np.copy(row_col)
+    train_label = np.copy(label)
+
+    print( "{} train samples, ".format(sample_num - valid_num) + " {} valid samples.".format(valid_num) )
+
+    train_ds = tf.data.Dataset.from_tensor_slices((train_sample, train_label))
+    train_ds = train_ds.shuffle(buffer_size=1500)
+    #train_ds = train_ds.map()
+    train_ds = train_ds.repeat()
+    train_ds = train_ds.batch(batch_size, drop_remainder=False)
+
+    iterator_train = train_ds.make_one_shot_iterator()
+    dataloader_train = iterator_train.get_next()
+
+    valid_ds = tf.data.Dataset.from_tensor_slices((valid_sample, valid_label))
+    valid_ds = valid_ds.shuffle(buffer_size=10000)
+    valid_ds = valid_ds.repeat()
+    valid_ds = valid_ds.batch(batch_size, drop_remainder=True)
+
+    iterator_valid = valid_ds.make_one_shot_iterator()
+    dataloader_valid = iterator_valid.get_next()
+
+    return dataloader_train, dataloader_valid, max_row, max_col
+
+
+
+
+    
+
+
+            
+
