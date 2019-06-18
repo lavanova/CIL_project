@@ -260,7 +260,9 @@ class NeuCF2(object):
         with tf.control_dependencies(update_ops):
             gradients = opt.compute_gradients(self.loss)
             self.gradients = [[] if i == None else i for i in gradients]
-            self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
+            grads, variables = zip(*gradients)
+            grads, _ = tf.clip_by_global_norm(grads, 5.0)
+            self.updates = opt.apply_gradients(zip(grads, variables), global_step=self.global_step)
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
     def init_embedding(self, session):
