@@ -11,3 +11,9 @@ if [ -d ./log/model ]; then
 else
 	mkdir log/model
 fi
+
+if [ -d ./data ]; then
+	echo "data directory already exist"
+else
+	mkdir data
+fi
