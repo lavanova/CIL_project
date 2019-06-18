@@ -1,6 +1,8 @@
 from sklearn.manifold import LocallyLinearEmbedding, SpectralEmbedding
 from sklearn.decomposition import FactorAnalysis, NMF
 import numpy as np
+import os
+import csv
 data_path = '../data'
 
 def embedding(n_components=64):
