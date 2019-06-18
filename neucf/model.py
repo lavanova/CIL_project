@@ -10,6 +10,8 @@ class NeuCF(object):
     def __init__(self, input, label, row_num, col_num, args):
         self.row_num = row_num
         self.col_num = col_num
+        self.isTraining = tf.placeholder(tf.bool, name="isTrainingflag")
+        self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.learning_rate = tf.Variable(float(args.lr), trainable=False, dtype=tf.float32, name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
         decay_steps = 100000
@@ -48,17 +50,21 @@ class NeuCF(object):
         with tf.variable_scope("NeuCF"):
             for idx in range(1, len(args.layers)):
                 mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
-                                            activation=tf.nn.relu,
+                                            #activation=tf.nn.relu,
                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
                                             name="dense_layer%d" %idx)
+                if args.batch_norm:
+                    mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                mlp_vector = tf.nn.relu(mlp_vector)
+                mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
         
         predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
         with tf.variable_scope("NeuCF"):
-            self.prediction = tf.layers.dense(predict_vector, 1,
+            prediction = tf.layers.dense(predict_vector, 1,
                                         #kernel_initializer=tf.initializers.lecun_uniform,
                                         #bias_initializer=tf.initializers.lecun_uniform,
                                         name="prediction")
-        
+        self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
         self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
         self.sse = tf.reduce_sum( tf.square((self.prediction - label)) )
         #self.reg_loss = tf.add_n( tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES) )
@@ -78,7 +84,9 @@ class NeuCF(object):
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
 
-    def step(self, session, isTraining=False, isValidating=False, isTesting=False, logging=False):
+    def step(self, session, isTraining=False, isValidating=False, isTesting=False, dropout_keep_prob=0.5, logging=False):
+        input_feed = {self.isTraining: isTraining,
+                      self.dropout_keep_prob: dropout_keep_prob}
         if isTraining:
             if logging:
                 output_feed = [self.updates, 
@@ -87,13 +95,13 @@ class NeuCF(object):
                                self.loss,
                                self.rmse,
                                self.learning_rate_summary]
-                outputs = session.run(output_feed)
+                outputs = session.run(output_feed, input_feed)
                 return outputs[1], outputs[2], outputs[3], outputs[4], outputs[5]
             
             else:
                 output_feed = [self.updates,
                                self.loss]
-                outputs = session.run(output_feed)
+                outputs = session.run(output_feed, input_feed)
                 return outputs[1]
         
         elif isValidating:
@@ -101,9 +109,9 @@ class NeuCF(object):
                            self.rmse_summary,
                            self.loss,
                            self.sse]
-            outputs = session.run(output_feed)
+            outputs = session.run(output_feed, input_feed)
             return outputs[2], outputs[3]
 
         elif isTesting:
-            outputs = session.run(self.prediction)
+            outputs = session.run(self.prediction, input_feed)
             return outputs

@@ -2,7 +2,47 @@ import os
 import csv
 import numpy as np
 import tensorflow as tf
+#import pandas as pd
 data_path = '../data'
+def create_dataloader_test(batch_size=256):
+    row_col = []
+    label = []
+    rcstrs = []
+    with open(os.path.join(data_path, "sampleSubmission.csv")) as f:
+        reader = csv.reader(f, delimiter=',')
+        for i, sample in enumerate(reader):
+            if i == 0:
+                continue
+            if sample == None or sample == "":
+                continue
+            rcstrs.append(sample[0])
+            row = int(sample[0].split('_')[0][1:])
+            col = int(sample[0].split('_')[1][1:])
+            row_col.append([row, col])
+            rating = int(sample[1])
+            label.append(rating)         
+    
+    row_col = np.asarray(row_col)
+    label = np.asarray(label, dtype=np.float32).reshape((-1, 1)) #reshape??
+    assert row_col.shape[0] == label.shape[0], "error sample number doesn't match with label number"
+
+    sample_num = label.shape[0]
+
+    print( "{} test samples, ".format(sample_num) )
+
+    test_ds = tf.data.Dataset.from_tensor_slices((row_col, label))
+    #test_ds = test_ds.shuffle(buffer_size=1500)
+    #train_ds = train_ds.map()
+    #test_ds = test_ds.repeat()
+    test_ds = test_ds.batch(batch_size, drop_remainder=False)
+
+    #iterator_test = test_ds.make_one_shot_iterator()
+    iterator_test = test_ds.make_initializable_iterator()
+    #dataloader_test = iterator_test.get_next()
+    
+    #template = pd.read_csv( os.path.join(data_path, "sampleSubmission.csv") )
+    #return dataloader_test, row_col, rcstrs
+    return iterator_test, row_col, rcstrs
 def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     row_col = []
     label = []
@@ -33,15 +73,15 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     label = label[index]
 
     valid_num = int(sample_num * valid_ratio)
-    #valid_sample = row_col[0: valid_num, :]
-    #valid_label = label[0: valid_num, :]
-    valid_sample = np.copy(row_col)
-    valid_label = np.copy(label)
+    valid_sample = row_col[0: valid_num, :]
+    valid_label = label[0: valid_num, :]
+    #valid_sample = np.copy(row_col)
+    #valid_label = np.copy(label)
 
-    #train_sample = row_col[valid_num:, :]
-    #train_label = label[valid_num:, :]
-    train_sample = np.copy(row_col)
-    train_label = np.copy(label)
+    train_sample = row_col[valid_num:, :]
+    train_label = label[valid_num:, :]
+    #train_sample = np.copy(row_col)
+    #train_label = np.copy(label)
 
     print( "{} train samples, ".format(sample_num - valid_num) + " {} valid samples.".format(valid_num) )
 
