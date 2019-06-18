@@ -66,10 +66,10 @@ def _train(args):
         #dataloader_test, row_col_prediction, rcstrs = create_dataloader_test(batch_size=args.batch_size)
         iterator_test, row_col_prediction, rcstrs = create_dataloader_test(batch_size=args.batch_size)
         sess.run(iterator_test.initializer)
-        dataloader_test = iterator_test.get_next()
+        #dataloader_test = iterator_test.get_next()
         row_col_train, label_train = dataloader_train
         row_col_valid, label_valid = dataloader_valid
-        row_col_test, label_test = dataloader_test
+        #row_col_test, label_test = dataloader_test
 
         with tf.variable_scope("model", reuse=False):
             model_train = NeuCF2(row_col_train, label_train, max_row, max_col, args)
@@ -79,14 +79,14 @@ def _train(args):
             model_valid = NeuCF2(row_col_valid, label_valid, max_row, max_col, args)
             sess.run(tf.global_variables_initializer())
 
-        with tf.variable_scope("model", reuse=True):
-            model_test = NeuCF2(row_col_test, label_test, max_row, max_col, args)
-            sess.run(tf.global_variables_initializer())
+        #with tf.variable_scope("model", reuse=True):
+        #    model_test = NeuCF2(row_col_test, label_test, max_row, max_col, args)
+        #    sess.run(tf.global_variables_initializer())
 
         if args.external_embedding:
             model_train.init_embedding(sess)
             model_valid.init_embedding(sess)
-            model_test.init_embedding(sess)
+            #model_test.init_embedding(sess)
 
         summary_writer = tf.summary.FileWriter(args.log_path, sess.graph)
 
@@ -107,7 +107,8 @@ def _train(args):
             valid_rmse = np.sqrt(valid_sse)
             logfile.write( '--Avg. Train Loss ='+str(epoch_loss)[:6] + '    --Avg. Valid Loss ='+str(valid_loss)[:6]+ '    --Valid RMSE = '+str(valid_rmse)[:6]+'\n' )
             logfile.flush()
-            #saver.save(sess, os.path.join(args.log_path,'model'), global_step=i, write_meta_graph=False)
+            saver.save(sess, os.path.join(args.log_path,'model'), global_step=i, write_meta_graph=False)
+            """
             test_prediction = None
             for j in range(math.ceil(row_col_prediction.shape[0] / args.batch_size)):
                 predict = model_test.step(sess, isTesting=True, dropout_keep_prob=1)
@@ -123,6 +124,7 @@ def _train(args):
             sess.run(iterator_test.initializer)
             dataloader_test = iterator_test.get_next()
             row_col_test, label_test = dataloader_test
+            """
 if __name__ == '__main__':
     args = parse_args()
     args.layers = eval(args.layers)
