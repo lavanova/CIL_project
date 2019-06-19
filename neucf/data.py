@@ -86,7 +86,7 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     print( "{} train samples, ".format(sample_num - valid_num) + " {} valid samples.".format(valid_num) )
 
     train_ds = tf.data.Dataset.from_tensor_slices((train_sample, train_label))
-    train_ds = train_ds.shuffle(buffer_size=1500)
+    train_ds = train_ds.shuffle(buffer_size=(sample_num-valid_num))
     #train_ds = train_ds.map()
     train_ds = train_ds.repeat()
     train_ds = train_ds.batch(batch_size, drop_remainder=False)
@@ -95,7 +95,7 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     dataloader_train = iterator_train.get_next()
 
     valid_ds = tf.data.Dataset.from_tensor_slices((valid_sample, valid_label))
-    valid_ds = valid_ds.shuffle(buffer_size=10000)
+    valid_ds = valid_ds.shuffle(buffer_size=valid_num)
     valid_ds = valid_ds.repeat()
     valid_ds = valid_ds.batch(batch_size, drop_remainder=True)
 
