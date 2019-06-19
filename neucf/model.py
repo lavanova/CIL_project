@@ -236,14 +236,33 @@ class NeuCF2(object):
                                          kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
                                          name="dense_layer%d" %(len(args.layers) - 1))
         #predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
-            mlp_vector = tf.layers.dense(mlp_vector, 5,
-                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
-                                         name="dense_layer_final")
-        onetensor = tf.constant(1, dtype=tf.int32)
-        self.loss1 = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(label, dtype=tf.int32)-onetensor), logits=mlp_vector) )
-        probability = tf.nn.softmax(mlp_vector)
-        self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1)
-
+        if args.loss_type == "cross_entropy":
+            with tf.variable_scope("NeuCF"):
+                mlp_vector = tf.layers.dense(mlp_vector, 5,
+                                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            name="dense_layer_final")
+            onetensor = tf.constant(1, dtype=tf.int32)
+            self.loss1 = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(label, dtype=tf.int32)-onetensor), logits=mlp_vector) )
+            probability = tf.nn.softmax(mlp_vector)
+            self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1)
+        elif args.loss_type == "mse":
+            with tf.variable_scope("NeuCF"):
+                prediction = tf.layers.dense(mlp_vector, 1,
+                                            #activation=tf.nn.relu,
+                                            #kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            name="dense_layer_final")
+            prediction = tf.reshape(prediction, [-1])
+            self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
+            self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
+        elif args.loss_type == "l1":
+            with tf.variable_scope("NeuCF"):
+                prediction = tf.layers.dense(mlp_vector, 1,
+                                            #activation=tf.nn.relu,
+                                            #kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            name="dense_layer_final")
+            prediction = tf.reshape(prediction, [-1])
+            self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
+            self.loss1 = tf.losses.absolute_difference(label, self.prediction)
         #self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
         #self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
         self.sse = tf.reduce_sum( tf.square((self.prediction - label)) )
@@ -258,11 +277,16 @@ class NeuCF2(object):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
         with tf.control_dependencies(update_ops):
-            gradients = opt.compute_gradients(self.loss)
-            self.gradients = [[] if i == None else i for i in gradients]
-            grads, variables = zip(*gradients)
-            grads, _ = tf.clip_by_global_norm(grads, 5.0)
-            self.updates = opt.apply_gradients(zip(grads, variables), global_step=self.global_step)
+            if args.loss_type == "cross_entropy":
+                gradients = opt.compute_gradients(self.loss)
+                self.gradients = [[] if i == None else i for i in gradients]
+                grads, variables = zip(*gradients)
+                grads, _ = tf.clip_by_global_norm(grads, 5.0)
+                self.updates = opt.apply_gradients(zip(grads, variables), global_step=self.global_step)
+            else:
+                gradients = opt.compute_gradients(self.loss)
+                self.gradients = [[] if i == None else i for i in gradients]
+                self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
     def init_embedding(self, session):
