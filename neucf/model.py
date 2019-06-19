@@ -242,7 +242,7 @@ class NeuCF2(object):
         onetensor = tf.constant(1, dtype=tf.int32)
         self.loss1 = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(label, dtype=tf.int32)-onetensor), logits=mlp_vector) )
         probability = tf.nn.softmax(mlp_vector)
-        self.prediction = tf.reduce_mean( tf.multiply(probability, classtensor) , axis=1)
+        self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1)
 
         #self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
         #self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
