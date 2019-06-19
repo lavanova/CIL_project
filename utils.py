@@ -44,11 +44,13 @@ def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH): # expect the input to be
 def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
     outpathmask = parameters.MASK_PATH, inpath = parameters.RAWDATA_PATH):
     rawdata = pd.read_csv(inpath)
+    return getDataMask(rawdata.values)
+
+
+def getDataMask(rawdata):
     data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
     mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
-    total = 0
-    count = 0
-    for i in rawdata.values:
+    for i in rawdata:
         r, c = GetRC(i[0])
         data[r,c] = i[1]
         mask[r,c] = 1

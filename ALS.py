@@ -35,7 +35,7 @@ def ALS_iterU(data, mask, U, V, regularizer=0.01):
     n = U.shape[1]
     m = V.shape[1]
     k = V.shape[0]
-    for i in trange(n):
+    for i in range(n):
         Vm = ( mask[i,:]*V )
         mat = np.linalg.inv(  Vm @ Vm.T + regularizer*np.identity(k) ) # k*k
         val = V @ (mask[i, :]*data[i, :]).T  # k*1
@@ -54,7 +54,7 @@ def calc_cost(data, mask, U, V):
 '''
 Dense implementation of ALS
 '''
-def ALS(data, mask, epochs = 15, factors=50, regularizer=0.01):
+def ALS(data, mask, epochs = 5, factors=50, regularizer=0.01):
     n = parameters.NROWS
     m = parameters.NCOLS
     k = factors
@@ -83,4 +83,4 @@ def main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv'):
     WriteToCSV(pred, path=path)
 
 if __name__ == "__main__":
-    main(epochs=5, factors=40, regularizer=0.01, path='ALS.csv')
+    main(epochs=5, factors=40, regularizer=0.1, path='ALS.csv')
