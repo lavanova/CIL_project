@@ -127,7 +127,7 @@ class NeuCF2(object):
         self.learning_rate = tf.Variable(float(args.lr), trainable=False, dtype=tf.float32, name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
         classtensor = tf.constant([1,2,3,4,5], dtype=tf.float32)
-        decay_steps = 100000
+        decay_steps = 1500
         decay_rate = 0.96
         self.learning_rate = tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
         row = input[:,0]
