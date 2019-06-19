@@ -15,8 +15,8 @@ class NeuCF(object):
         self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.learning_rate = tf.Variable(float(args.lr), trainable=False, dtype=tf.float32, name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
-        decay_steps = 1500
-        decay_rate = 0.96
+        decay_steps = args.decay_step
+        decay_rate = args.decay_rate
         self.learning_rate = tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
         row = input[:,0]
         col = input[:,1]
@@ -127,8 +127,8 @@ class NeuCF2(object):
         self.learning_rate = tf.Variable(float(args.lr), trainable=False, dtype=tf.float32, name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
         classtensor = tf.constant([1,2,3,4,5], dtype=tf.float32)
-        decay_steps = 1500
-        decay_rate = 0.96
+        decay_steps = args.decay_step
+        decay_rate = args.decay_rate
         self.learning_rate = tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
         row = input[:,0]
         col = input[:,1]

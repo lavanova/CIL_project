@@ -35,6 +35,10 @@ def parse_args():
                         help='Embedding size of MF model.')
     parser.add_argument('--dropout', type=float, default=0.5,
                         help='dropout probability')
+    parser.add_argument('--decay_step', type=int, default=1500,
+                        help='decay step')
+    parser.add_argument('--decay_rate', type=float, default=0.96,
+                        help='decay rate')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
     parser.add_argument('--layers', nargs='?', default='[64,32,16,8]',
