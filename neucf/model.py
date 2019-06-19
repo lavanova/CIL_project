@@ -221,22 +221,22 @@ class NeuCF2(object):
                                        lle_row_latent, lle_col_latent,
                                        factor_row_latent, factor_col_latent,
                                        nmf_row_latent, nmf_col_latent], axis=1)
-        with tf.variable_scope("NeuCF"):
-            for idx in range(1, len(args.layers) - 1):
-                mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
-                                            #activation=tf.nn.relu,
-                                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
-                                            name="dense_layer%d" %idx)
-                if args.batch_norm:
-                    mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
-                mlp_vector = tf.nn.relu(mlp_vector)
-                mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
-            mlp_vector = tf.layers.dense(mlp_vector, args.layers[len(args.layers) - 1],
-                                         activation=tf.nn.relu,
-                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
-                                         name="dense_layer%d" %(len(args.layers) - 1))
-        #predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
         if args.loss_type == "cross_entropy":
+            with tf.variable_scope("NeuCF"):
+                for idx in range(1, len(args.layers) - 1):
+                    mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
+                                                #activation=tf.nn.relu,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
+                                                name="dense_layer%d" %idx)
+                    if args.batch_norm:
+                        mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                    mlp_vector = tf.nn.relu(mlp_vector)
+                    mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                mlp_vector = tf.layers.dense(mlp_vector, args.layers[len(args.layers) - 1],
+                                            activation=tf.nn.relu,
+                                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            name="dense_layer%d" %(len(args.layers) - 1))
+            #predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
             with tf.variable_scope("NeuCF"):
                 mlp_vector = tf.layers.dense(mlp_vector, 5,
                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
@@ -247,21 +247,62 @@ class NeuCF2(object):
             self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1)
         elif args.loss_type == "mse":
             with tf.variable_scope("NeuCF"):
-                prediction = tf.layers.dense(mlp_vector, 1,
+                for idx in range(1, len(args.layers)):
+                    mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
+                                                #activation=tf.nn.relu,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
+                                                name="dense_layer%d" %idx)
+                    if args.batch_norm:
+                        mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                    mlp_vector = tf.nn.relu(mlp_vector)
+                    mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                #mlp_vector = tf.layers.dense(mlp_vector, args.layers[len(args.layers) - 1],
+                #                            activation=tf.nn.relu,
+                #                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                #                            name="dense_layer%d" %(len(args.layers) - 1))
+            with tf.variable_scope("NeuCF"):
+                mlp_vector = tf.layers.dense(mlp_vector, 8,
                                             #activation=tf.nn.relu,
-                                            #kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
                                             name="dense_layer_final")
+                if args.batch_norm:
+                    mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization_final")
+                mlp_vector = tf.nn.relu(mlp_vector)
+                mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                prediction = tf.layers.dense(mlp_vector, 1, name="prediction")
+
             prediction = tf.reshape(prediction, [-1])
             self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
             self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
         elif args.loss_type == "l1":
             with tf.variable_scope("NeuCF"):
-                prediction = tf.layers.dense(mlp_vector, 1,
+                for idx in range(1, len(args.layers)):
+                    mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
+                                                #activation=tf.nn.relu,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
+                                                name="dense_layer%d" %idx)
+                    if args.batch_norm:
+                        mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                    mlp_vector = tf.nn.relu(mlp_vector)
+                    mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                #mlp_vector = tf.layers.dense(mlp_vector, args.layers[len(args.layers) - 1],
+                #                            activation=tf.nn.relu,
+                #                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                #                            name="dense_layer%d" %(len(args.layers) - 1))
+            with tf.variable_scope("NeuCF"):
+                mlp_vector = tf.layers.dense(mlp_vector, 8,
                                             #activation=tf.nn.relu,
-                                            #kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                            kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
                                             name="dense_layer_final")
+                if args.batch_norm:
+                    mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization_final")
+                mlp_vector = tf.nn.relu(mlp_vector)
+                mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                prediction = tf.layers.dense(mlp_vector, 1, name="prediction")
+                                
             prediction = tf.reshape(prediction, [-1])
             self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
+            #self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
             self.loss1 = tf.losses.absolute_difference(label, self.prediction)
         #self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
         #self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
