@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from data import create_dataloader_train, create_dataloader_test
 import argparse
-from model import NeuCF, NeuCF2
+from model import NeuCF, NeuCF2, NeuCF3
 import os
 import math
 import pandas as pd
