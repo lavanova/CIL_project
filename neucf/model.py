@@ -572,6 +572,7 @@ class NeuCF3(object):
                                axis=1)
         if args.loss_type == "cross_entropy":
             with tf.variable_scope("NeuCF"):
+                """
                 for idx in range(1, len(args.layers) - 1):
                     mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
                                                 #activation=tf.nn.relu,
@@ -585,8 +586,25 @@ class NeuCF3(object):
                                             activation=tf.nn.relu,
                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
                                             name="dense_layer%d" %(len(args.layers) - 1))
+                """
+                for idx in range(1, len(args.layers)):
+                    mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
+                                                #activation=tf.nn.relu,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[idx])),
+                                                name="dense_layer%d" %idx)
+                    if args.batch_norm:
+                        mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                    mlp_vector = tf.nn.relu(mlp_vector)
+                    mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
             predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
             with tf.variable_scope("NeuCF"):
+                predict_vector = tf.layers.dense(predict_vector, 128,
+                                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                                 name="dense_layer_sub")
+                if args.batch_norm:
+                    predict_vector = tf.layers.batch_normalization(predict_vector, training=self.isTraining, name="batch_normalization_sub")
+                predict_vector = tf.nn.relu(predict_vector)
+                predict_vector = tf.nn.dropout(predict_vector, self.dropout_keep_prob)
                 predict_vector = tf.layers.dense(predict_vector, 5,
                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
                                             name="dense_layer_final")
