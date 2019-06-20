@@ -43,6 +43,8 @@ def parse_args():
                         help='decay rate')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
+    parser.add_argument('--max_norm_res', type=bool, default=True,
+                        help='whether use max_norm in residual block')
     parser.add_argument('--residual', type=bool, default=False,
                         help='whether add residual connection')
     parser.add_argument('--residual_block', type=int, default=2,

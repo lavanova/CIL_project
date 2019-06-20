@@ -905,7 +905,7 @@ class NeuCF4(object):
                 mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
 
                 for block in range(args.residual_block):
-                    mlp_vector = self.two_linear( mlp_vector, args.layers[1], args.residual, self.dropout_keep_prob, args.batch_norm, block, args )
+                    mlp_vector = self.two_linear( mlp_vector, args.layers[1], block, args )
 
                 for idx in range(2, len(args.layers) - 1):
                     mlp_vector = tf.layers.dense(mlp_vector, args.layers[idx],
@@ -1015,26 +1015,40 @@ class NeuCF4(object):
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
     
-    def two_linear(self, xin, linear_size, residual, dropout_keep_prob, batch_norm, idx, args):
+    def two_linear(self, xin, linear_size, idx, args):
         #regular scale!!!
+        
         with tf.variable_scope("two_linear_" + str(idx)):
-            y = tf.layers.dense(xin, linear_size, 
-                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[1])),
-                                name="interdense1_"+str(idx))
-            if batch_norm:
+            input_size = int(xin.get_shape()[1])
+            w2 = tf.get_variable(name='w2_'+str(idx), initializer=kaiming, 
+                                 shape=[input_size, linear_size], dtype=tf.float32)
+            b2 = tf.get_variable(name='b2_'+str(idx), initializer=kaiming,
+                                 shape=[linear_size], dtype=tf.float32)
+            w2 = tf.clip_by_norm(w2, 1) if args.max_norm_res else w2
+            y = tf.matmul(xin, w2) + b2
+            #y = tf.layers.dense(xin, linear_size, 
+            #                    kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[1])),
+            #                    name="interdense1_"+str(idx))
+            if args.batch_norm:
                 y = tf.layers.batch_normalization(y, training=self.isTraining, name="batch_normalization1_"+str(idx))
             y = tf.nn.relu(y)
             y = tf.nn.dropout(y, self.dropout_keep_prob)
 
-            y = tf.layers.dense(y, linear_size, 
-                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[1])),
-                                name="interdense2_"+str(idx))
-            if batch_norm:
+            #y = tf.layers.dense(y, linear_size, 
+            #                    kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[1])),
+            #                    name="interdense2_"+str(idx))
+            w3 = tf.get_variable(name='w3_'+str(idx), initializer=kaiming, 
+                                 shape=[linear_size, linear_size], dtype=tf.float32)
+            b3 = tf.get_variable(name='b3_'+str(idx), initializer=kaiming,
+                                 shape=[linear_size], dtype=tf.float32)
+            w3 = tf.clip_by_norm(w3, 1) if args.max_norm_res else w3
+            y = tf.matmul(y, w3) + b3
+            if args.batch_norm:
                 y = tf.layers.batch_normalization(y, training=self.isTraining, name="batch_normalization2_"+str(idx))
             y = tf.nn.relu(y)
             y = tf.nn.dropout(y, self.dropout_keep_prob)
 
-            y = (xin + y) if residual else y
+            y = (xin + y) if args.residual else y
         
         return y
             
