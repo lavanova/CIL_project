@@ -29,6 +29,8 @@ def parse_args():
                         help='valid train set split ratio')
     parser.add_argument('--external_embedding', type=bool, default=False,
                         help='whether use external embeddings')
+    parser.add_argument('--external_embedding_trainable', type=bool, default=False,
+                        help='whether external embedding is trainable or not')
     parser.add_argument('--loss_type', nargs='?', default='mse',
                         help='loss type:mse, cross_entropy,...')
     parser.add_argument('--num_factors', type=int, default=8,
