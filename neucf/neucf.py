@@ -97,6 +97,21 @@ def _train(args):
                 model_train.init_embedding(sess)
                 #model_valid.init_embedding(sess)
                 #model_test.init_embedding(sess)
+        elif args.model == "NeuCF3":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF3(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF3(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF3(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            if args.external_embedding:
+                model_train.init_embedding(sess)            
         elif args.model == "NeuCF":
             with tf.variable_scope("model", reuse=False):
                 model_train = NeuCF(row_col_train, label_train, max_row, max_col, args)
@@ -109,7 +124,7 @@ def _train(args):
             with tf.variable_scope("model", reuse=True):
                 model_test = NeuCF(row_col_test, label_test, max_row, max_col, args)
                 sess.run(tf.global_variables_initializer())           
-
+        
         summary_writer = tf.summary.FileWriter(args.log_path, sess.graph)
 
         #vars = [v for v in tf.global_variables() if v.name.startswith("model/NeuCF")]
