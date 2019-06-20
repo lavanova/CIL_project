@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from data import create_dataloader_train, create_dataloader_test
 import argparse
-from model import NeuCF, NeuCF2, NeuCF3
+from model import NeuCF, NeuCF2, NeuCF3, NeuCF4
 import os
 import math
 import pandas as pd
@@ -43,6 +43,10 @@ def parse_args():
                         help='decay rate')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
+    parser.add_argument('--residual', type=bool, default=False,
+                        help='whether add residual connection')
+    parser.add_argument('--residual_block', type=int, default=2,
+                        help='how many residual blocks')
     parser.add_argument('--layers', nargs='?', default='[64,32,16,8]',
                         help="MLP layers. Note that the first layer is the concatenation of user and item embeddings. So layers[0]/2 is the embedding size.")
     parser.add_argument('--reg_mf', type=float, default=0,
@@ -111,7 +115,22 @@ def _train(args):
                 sess.run(tf.global_variables_initializer())
 
             if args.external_embedding:
-                model_train.init_embedding(sess)            
+                model_train.init_embedding(sess)     
+        elif args.model == "NeuCF4":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF4(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF4(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF4(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            if args.external_embedding:
+                model_train.init_embedding(sess)                   
         elif args.model == "NeuCF":
             with tf.variable_scope("model", reuse=False):
                 model_train = NeuCF(row_col_train, label_train, max_row, max_col, args)
