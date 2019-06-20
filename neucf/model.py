@@ -134,47 +134,79 @@ class NeuCF2(object):
         col = input[:,1]
         #label = tf.cast(label, dtype=tf.int32)
         label = tf.reshape(label, [-1])
-        Spectral_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]), 
-                                             trainable=args.external_embedding_trainable, name="spectral_embedding_row")
+        with tf.variable_scope("NeuCF"):
+            #Spectral_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]), 
+            #                                    trainable=args.external_embedding_trainable, name="spectral_embedding_row")
+            Spectral_Embedding_Row = tf.get_variable(name="spectral_embedding_row", shape=[row_num+1, n_components],
+                                                     dtype=tf.float32, 
+                                                     regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                     trainable=args.external_embedding_trainable)
+            self.spectral_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
+            self.spectral_embedding_row_init = Spectral_Embedding_Row.assign(self.spectral_embedding_row_placeholder)
 
-        self.spectral_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
-        self.spectral_embedding_row_init = Spectral_Embedding_Row.assign(self.spectral_embedding_row_placeholder)
 
+            #Spectral_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
+            #                                    trainable=args.external_embedding_trainable, name="spectral_embedding_col")
+            Spectral_Embedding_Col = tf.get_variable(name="spectral_embedding_col", shape=[col_num+1, n_components],
+                                                     dtype=tf.float32,
+                                                     regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                     trainable=args.external_embedding_trainable)
+            self.spectral_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
+            self.spectral_embedding_col_init = Spectral_Embedding_Col.assign(self.spectral_embedding_col_placeholder)
 
-        Spectral_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
-                                             trainable=args.external_embedding_trainable, name="spectral_embedding_col")
-        self.spectral_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
-        self.spectral_embedding_col_init = Spectral_Embedding_Col.assign(self.spectral_embedding_col_placeholder)
+            #LLE_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
+            #                                trainable=args.external_embedding_trainable, name="lle_embedding_row")
+            LLE_Embedding_Row = tf.get_variable(name="lle_embedding_row", shape=[row_num+1, n_components],
+                                                dtype=tf.float32,
+                                                regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                trainable=args.external_embedding_trainable)
+            self.lle_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
+            self.lle_embedding_row_init = LLE_Embedding_Row.assign(self.lle_embedding_row_placeholder)
 
-        LLE_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
-                                        trainable=args.external_embedding_trainable, name="lle_embedding_row")
-        self.lle_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
-        self.lle_embedding_row_init = LLE_Embedding_Row.assign(self.lle_embedding_row_placeholder)
+            #LLE_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
+            #                                            trainable=args.external_embedding_trainable, name="lle_embedding_col")
+            LLE_Embedding_Col = tf.get_variable(name="lle_embedding_col", shape=[col_num+1, n_components],
+                                                dtype=tf.float32,
+                                                regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                trainable=args.external_embedding_trainable)
+            self.lle_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
+            self.lle_embedding_col_init = LLE_Embedding_Col.assign(self.lle_embedding_col_placeholder)
 
-        LLE_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
-                                                    trainable=args.external_embedding_trainable, name="lle_embedding_col")
-        self.lle_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
-        self.lle_embedding_col_init = LLE_Embedding_Col.assign(self.lle_embedding_col_placeholder)
+            #Factor_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
+            #                                trainable=args.external_embedding_trainable, name="factor_embedding_row")
+            Factor_Embedding_Row = tf.get_variable(name="factor_embedding_row", shape=[row_num+1, n_components],
+                                                   dtype=tf.float32,
+                                                   regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                   trainable=args.external_embedding_trainable)
+            self.factor_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
+            self.factor_embedding_row_init = Factor_Embedding_Row.assign(self.factor_embedding_row_placeholder)
 
-        Factor_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
-                                           trainable=args.external_embedding_trainable, name="factor_embedding_row")
-        self.factor_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
-        self.factor_embedding_row_init = Factor_Embedding_Row.assign(self.factor_embedding_row_placeholder)
+            #Factor_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
+            #                                trainable=args.external_embedding_trainable, name="factor_embedding_col")
+            Factor_Embedding_Col = tf.get_variable(name="factor_embedding_col", shape=[col_num+1, n_components],
+                                                   dtype=tf.float32,
+                                                   regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                   trainable=args.external_embedding_trainable)
+            self.factor_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
+            self.factor_embedding_col_init = Factor_Embedding_Col.assign(self.factor_embedding_col_placeholder)
 
-        Factor_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
-                                           trainable=args.external_embedding_trainable, name="factor_embedding_col")
-        self.factor_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
-        self.factor_embedding_col_init = Factor_Embedding_Col.assign(self.factor_embedding_col_placeholder)
+            #NMF_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
+            #                                trainable=args.external_embedding_trainable, name="nmf_embedding_row")
+            NMF_Embedding_Row = tf.get_variable(name="nmf_embedding_row", shape=[row_num+1, n_components],
+                                                dtype=tf.float32,
+                                                regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                trainable=args.external_embedding_trainable)
+            self.nmf_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
+            self.nmf_embedding_row_init = NMF_Embedding_Row.assign(self.nmf_embedding_row_placeholder)
 
-        NMF_Embedding_Row = tf.Variable(tf.constant(0.0, shape=[row_num+1, n_components]),
-                                        trainable=args.external_embedding_trainable, name="nmf_embedding_row")
-        self.nmf_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, n_components])
-        self.nmf_embedding_row_init = NMF_Embedding_Row.assign(self.nmf_embedding_row_placeholder)
-
-        NMF_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
-                                        trainable=args.external_embedding_trainable, name="nmf_embedding_col")
-        self.nmf_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
-        self.nmf_embedding_col_init = NMF_Embedding_Col.assign(self.nmf_embedding_col_placeholder)
+            #NMF_Embedding_Col = tf.Variable(tf.constant(0.0, shape=[col_num+1, n_components]),
+            #                                trainable=args.external_embedding_trainable, name="nmf_embedding_col")
+            NMF_Embedding_Col = tf.get_variable(name="nmf_embedding_col", shape=[col_num+1, n_components],
+                                                dtype=tf.float32,
+                                                regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                trainable=args.external_embedding_trainable)
+            self.nmf_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
+            self.nmf_embedding_col_init = NMF_Embedding_Col.assign(self.nmf_embedding_col_placeholder)
 
         spectral_row_latent = tf.nn.embedding_lookup(Spectral_Embedding_Row, row)
         spectral_col_latent = tf.nn.embedding_lookup(Spectral_Embedding_Col, col)

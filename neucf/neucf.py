@@ -95,8 +95,8 @@ def _train(args):
 
             if args.external_embedding:
                 model_train.init_embedding(sess)
-                model_valid.init_embedding(sess)
-                model_test.init_embedding(sess)
+                #model_valid.init_embedding(sess)
+                #model_test.init_embedding(sess)
         elif args.model == "NeuCF":
             with tf.variable_scope("model", reuse=False):
                 model_train = NeuCF(row_col_train, label_train, max_row, max_col, args)
