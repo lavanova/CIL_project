@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from data import create_dataloader_train, create_dataloader_test
 import argparse
-from model import NeuCF, NeuCF2
+from model import NeuCF, NeuCF2, NeuCF3, NeuCF4
 import os
 import math
 import pandas as pd
@@ -15,6 +15,8 @@ def parse_args():
                         help='log path')
     parser.add_argument('--dataset', nargs='?', default='ml-1m',
                         help='Choose a dataset.')
+    parser.add_argument('--model', nargs='?', default='NeuCF2',
+                        help='which model')
     parser.add_argument('--epochs', type=int, default=100,
                         help='Number of epochs.')
     parser.add_argument('--epoch_iter', type=int, default=4597,
@@ -27,12 +29,26 @@ def parse_args():
                         help='valid train set split ratio')
     parser.add_argument('--external_embedding', type=bool, default=False,
                         help='whether use external embeddings')
+    parser.add_argument('--external_embedding_trainable', type=bool, default=False,
+                        help='whether external embedding is trainable or not')
+    parser.add_argument('--loss_type', nargs='?', default='mse',
+                        help='loss type:mse, cross_entropy,...')
     parser.add_argument('--num_factors', type=int, default=8,
                         help='Embedding size of MF model.')
     parser.add_argument('--dropout', type=float, default=0.5,
                         help='dropout probability')
+    parser.add_argument('--decay_step', type=int, default=1500,
+                        help='decay step')
+    parser.add_argument('--decay_rate', type=float, default=0.96,
+                        help='decay rate')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
+    parser.add_argument('--max_norm_res', type=bool, default=True,
+                        help='whether use max_norm in residual block')
+    parser.add_argument('--residual', type=bool, default=False,
+                        help='whether add residual connection')
+    parser.add_argument('--residual_block', type=int, default=2,
+                        help='how many residual blocks')
     parser.add_argument('--layers', nargs='?', default='[64,32,16,8]',
                         help="MLP layers. Note that the first layer is the concatenation of user and item embeddings. So layers[0]/2 is the embedding size.")
     parser.add_argument('--reg_mf', type=float, default=0,
@@ -70,24 +86,66 @@ def _train(args):
         row_col_train, label_train = dataloader_train
         row_col_valid, label_valid = dataloader_valid
         row_col_test, label_test = dataloader_test
+        if args.model == "NeuCF2":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF2(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
 
-        with tf.variable_scope("model", reuse=False):
-            model_train = NeuCF2(row_col_train, label_train, max_row, max_col, args)
-            sess.run(tf.global_variables_initializer())
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF2(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
 
-        with tf.variable_scope("model", reuse=True):
-            model_valid = NeuCF2(row_col_valid, label_valid, max_row, max_col, args)
-            sess.run(tf.global_variables_initializer())
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF2(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
 
-        with tf.variable_scope("model", reuse=True):
-            model_test = NeuCF2(row_col_test, label_test, max_row, max_col, args)
-            sess.run(tf.global_variables_initializer())
+            if args.external_embedding:
+                model_train.init_embedding(sess)
+                #model_valid.init_embedding(sess)
+                #model_test.init_embedding(sess)
+        elif args.model == "NeuCF3":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF3(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
 
-        if args.external_embedding:
-            model_train.init_embedding(sess)
-            model_valid.init_embedding(sess)
-            model_test.init_embedding(sess)
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF3(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
 
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF3(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            if args.external_embedding:
+                model_train.init_embedding(sess)     
+        elif args.model == "NeuCF4":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF4(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF4(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF4(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            if args.external_embedding:
+                model_train.init_embedding(sess)                   
+        elif args.model == "NeuCF":
+            with tf.variable_scope("model", reuse=False):
+                model_train = NeuCF(row_col_train, label_train, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_valid = NeuCF(row_col_valid, label_valid, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())
+
+            with tf.variable_scope("model", reuse=True):
+                model_test = NeuCF(row_col_test, label_test, max_row, max_col, args)
+                sess.run(tf.global_variables_initializer())           
+        
         summary_writer = tf.summary.FileWriter(args.log_path, sess.graph)
 
         #vars = [v for v in tf.global_variables() if v.name.startswith("model/NeuCF")]

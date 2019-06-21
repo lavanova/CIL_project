@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.model_selection import KFold
 from utils import *
 from ALS import ALS
-
+from svd_baseline import SVDBaseline
 
 def cross_validate(nfold=5, inpath=parameters.RAWDATA_PATH):
     rawdata = pd.read_csv(inpath)
@@ -14,7 +14,8 @@ def cross_validate(nfold=5, inpath=parameters.RAWDATA_PATH):
         print("Starting {}th fold ".format(len(results)+1))
         X_train, X_test = X[train_index], X[test_index]
         train_data, train_mask = getDataMask(X_train)
-        result_data = ALS(train_data, train_mask, epochs=4, factors=8, regularizer=0.05)
+        # result_data = ALS(train_data, train_mask, epochs=4, factors=10, regularizer=1)
+        result_data = SVDBaseline(train_data, train_mask)
         test_data, test_mask = getDataMask(X_test)
         rmse = getRMSE(result_data,test_data,test_mask)
         print("Validation RMSE is: {}".format(rmse))
