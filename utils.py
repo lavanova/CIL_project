@@ -2,7 +2,6 @@ import numpy as np
 import parameters
 import csv
 import pandas as pd
-from sklearn.impute import SimpleImputer
 from scipy.sparse import csr_matrix
 import random
 
@@ -39,6 +38,15 @@ def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH): # expect the input to be
     df = pd.DataFrame({'Id': rcstrs,'Prediction': values})
     df.to_csv(path,index=False)
     print("writing completed")
+
+
+def LoadRawData(inpath = parameters.RAWDATA_PATH):
+    rawdata = pd.read_csv(inpath)
+    result = []
+    for i in rawdata:
+        r, c = GetRC(i[0])
+        result.append([r, c, i[1]])
+    return result
 
 
 def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
@@ -80,23 +88,6 @@ def LoadTrainValDataMask(valper=0.15, inpath = parameters.RAWDATA_PATH):
     print("Load train validation data mask complete")
     return train_data, train_mask, val_data, val_mask
 
-'''
-[int, outpath, inpath] -> np.array (10000*1000)
-Load data from the file position, default: parameters.RAWDATA_PATH # './data/data_train.csv'
-Impute the missing values to global mean
-If save = 1
-Save data to the outpath, default: parameters.MATMEAN_PATH # MATMEAN_PATH = './cache/matimpute.npy'
-'''
-def LoadMeanImpute(save = 0, outpath = parameters.MATMEAN_PATH, inpath = parameters.RAWDATA_PATH):
-    data, mask = LoadDataMask()
-    fill = float(np.sum(data))/np.sum(mask) # global mean
-    imputer = SimpleImputer(missing_values=0, strategy='constant', fill_value=fill)
-    imputer = imputer.fit(data)
-    imputed_data = imputer.transform(data)
-    if save:
-        np.save(outpath, imputed_data)
-    print("Load mean imputeing complete")
-    return imputed_data
 
 '''
 Dense implementation of validation cost
