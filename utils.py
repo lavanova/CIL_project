@@ -54,6 +54,30 @@ def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
     rawdata = pd.read_csv(inpath)
     return getDataMask(rawdata.values)
 
+'''
+Normalize the data matrix,
+return the normalized data matrix, mean, and std
+'''
+def normalizeDataMask(data, mask):
+    mean = float(np.sum(data))/np.sum(mask)
+    std = np.sqrt(float(np.sum(np.square(data)))/np.sum(mask))
+    data = data - mean*mask
+    data = data/std
+    return data, mean, std
+
+'''
+Denormalize the data matrix without mask
+'''
+def denormalizeData(data, mean, std):
+    data = (data*std) + mean
+    return data
+
+'''
+Denormalize the data matrix with mask
+'''
+def denormalizeDataMask(data, mask, mean, std):
+    data = ((data*std) + mean) * mask
+    return data
 
 def getDataMask(rawdata):
     data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
