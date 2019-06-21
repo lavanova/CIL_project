@@ -15,6 +15,7 @@ class NeuCF(object):
         self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.learning_rate = tf.Variable(float(args.lr), trainable=False, dtype=tf.float32, name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
+        classtensor = tf.constant([1,2,3,4,5], dtype=tf.float32)
         decay_steps = args.decay_step
         decay_rate = args.decay_rate
         self.learning_rate = tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
@@ -60,13 +61,22 @@ class NeuCF(object):
                 mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
         
         predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
-        with tf.variable_scope("NeuCF"):
-            prediction = tf.layers.dense(predict_vector, 1,
-                                        #kernel_initializer=tf.initializers.lecun_uniform,
-                                        #bias_initializer=tf.initializers.lecun_uniform,
-                                        name="prediction")
-        self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
-        self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
+        if args.loss_type == "mse":
+            with tf.variable_scope("NeuCF"):
+                prediction = tf.layers.dense(predict_vector, 1,
+                                            #kernel_initializer=tf.initializers.lecun_uniform,
+                                            #bias_initializer=tf.initializers.lecun_uniform,
+                                            name="prediction")
+            self.prediction = tf.clip_by_value(prediction, 0.5, 5.5)
+            self.loss1 = tf.reduce_mean( tf.square((self.prediction - label)) )
+        elif args.loss_type == "cross_entropy":
+            prediction = tf.layers.dense(predict_vector, 5, 
+                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[len(args.layers) - 1])),
+                                         name="prediction")
+            onetensor = tf.constant(1, dtype=tf.int32)
+            self.loss1 = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(tf.reshape(label,[-1]), dtype=tf.int32)-onetensor), logits=prediction) )
+            probability = tf.nn.softmax(prediction)
+            self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1, keep_dims=True)
         self.sse = tf.reduce_sum( tf.square((self.prediction - label)) )
         #self.reg_loss = tf.add_n( tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES) )
         self.reg_loss = sum( tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES) )
