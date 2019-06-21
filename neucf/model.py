@@ -89,9 +89,16 @@ class NeuCF(object):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
         with tf.control_dependencies(update_ops):
-            gradients = opt.compute_gradients(self.loss)
-            self.gradients = [[] if i == None else i for i in gradients]
-            self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
+            if args.loss_type == "cross_entropy":
+                gradients = opt.compute_gradients(self.loss)
+                self.gradients = [[] if i == None else i for i in gradients]
+                grads, variables = zip(*gradients)
+                grads, _ = tf.clip_by_global_norm(grads, 5.0)
+                self.updates = opt.apply_gradients(zip(grads, variables), global_step=self.global_step)
+            else:            
+                gradients = opt.compute_gradients(self.loss)
+                self.gradients = [[] if i == None else i for i in gradients]
+                self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
 
