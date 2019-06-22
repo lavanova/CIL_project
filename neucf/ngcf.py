@@ -409,7 +409,8 @@ class NGCF(object):
             ego_embeddings = tf.nn.dropout(ego_embeddings, 1 - self.mess_dropout[k])
 
             # normalize the distribution of embeddings.
-            norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
+            #norm_embeddings = tf.math.l2_normalize(ego_embeddings, axis=1)
+            norm_embeddings = tf.nn.l2_normalize(ego_embeddings, axis=1)
 
             all_embeddings += [norm_embeddings]
 
