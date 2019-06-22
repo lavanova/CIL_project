@@ -180,6 +180,7 @@ class Data(object):
             pools = [rd.choice(neg_items) for _ in range(100)]
             self.neg_pools[u] = pools
         print('refresh negative pools', time() - t1)
+    """
     def sample_test(self):
         num_batch = int(self.test_set_rating.shape[0]) // self.batch_size)
         users = np.zeros((num_batch, self.batch_size))
@@ -243,7 +244,7 @@ class Data(object):
         print('n_users=%d, n_items=%d' % (self.n_users, self.n_items))
         print('n_interactions=%d' % (self.n_train + self.n_test))
         print('n_train=%d, n_test=%d, sparsity=%.5f' % (self.n_train, self.n_test, (self.n_train + self.n_test)/(self.n_users * self.n_items)))
-
+    """
 
     def get_sparsity_split(self):
         try:
