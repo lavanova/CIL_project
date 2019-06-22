@@ -527,6 +527,25 @@ if __name__ == '__main__':
 
     with tf.Session(config=config) as sess:
         data_generator = Data(batch_size=args.batch_size, valid_ratio=args.valid_ratio)
+        
+
+        plain_adj, norm_adj, mean_adj = data_generator.get_adj_mat()
+
+        if args.adj_type == 'plain':
+            data_config['norm_adj'] = plain_adj
+            print('use the plain adjacency matrix')
+
+        elif args.adj_type == 'norm':
+            data_config['norm_adj'] = norm_adj
+            print('use the normalized adjacency matrix')
+
+        elif args.adj_type == 'gcmc':
+            data_config['norm_adj'] = mean_adj
+            print('use the gcmc adjacency matrix')
+
+        else:
+            data_config['norm_adj'] = mean_adj + sp.eye(mean_adj.shape[0])
+            print('use the mean adjacency matrix')
         with tf.variable_scope("model", reuse=False):
             model_train = NGCF(data_generator.row_col_train, data_generator.label_train, data_config, args, pretrain_data=None)
             sess.run(tf.global_variables_initializer())
