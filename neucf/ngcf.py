@@ -268,7 +268,7 @@ class NGCF(object):
                                self.loss,
                                self.mf_loss]
                 outputs = session.run(output_feed, input_feed)
-                return outputs[1], outpus[2]
+                return outputs[1], outputs[2]
         
         elif isValidating:
             output_feed = [self.loss,
