@@ -13,8 +13,8 @@ class Data(object):
 
         #train_file = path + '/train.txt'
         #test_file = path + '/test.txt'
-        train_file = '../../data/data_train.csv'
-        test_file = '../../data/sampleSubmission.csv'
+        train_file = '../data/data_train.csv'
+        test_file = '../data/sampleSubmission.csv'
         #get number of users and items
         
         self.n_train, self.n_test = 0, 0
