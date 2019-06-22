@@ -8,7 +8,7 @@ import os
 import math
 import pandas as pd
 from utils import early_stopping
-import tqdm
+from tqdm import tqdm
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run NGCF.")
