@@ -59,12 +59,12 @@ class Data(object):
 
         valid_num = int(sample_num * valid_ratio)
         valid_sample = row_col[0: valid_num, :]
-        valid_label = label[0: valid_num, :]
+        valid_label = label[0: valid_num]
         #valid_sample = np.copy(row_col)
         #valid_label = np.copy(label)
 
         train_sample = row_col[valid_num:, :]
-        train_label = label[valid_num:, :]
+        train_label = label[valid_num:]
         #train_sample = np.copy(row_col)
         #train_label = np.copy(label)
 
