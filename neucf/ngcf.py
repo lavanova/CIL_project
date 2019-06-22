@@ -174,7 +174,7 @@ class NGCF(object):
                 row_col_g_embeddings = tf.concat([row_g_embeddings, col_g_embeddings], axis=1)
                 with tf.variable_scope("ngcf"):
                     prediction = tf.layers.dense(row_col_g_embeddings, 1, 
-                                                 regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.regs[0])),
+                                                 #kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.regs[0])),
                                                  name="prediction")
                 self.prediction = tf.reshape(tf.clip_by_value(prediction, 0.5, 5.5), [-1])
                 self.mf_loss = tf.losses.mean_squared_error(label, self.prediction)
@@ -182,7 +182,7 @@ class NGCF(object):
                 row_col_g_embeddings = tf.concat([row_g_embeddings, col_g_embeddings], axis=1)
                 with tf.variable_scope("ngcf"):
                     prediction = tf.layers.dense(row_col_g_embeddings, 5, 
-                                                 regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.regs[0])),
+                                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.regs[0])),
                                                  name="prediction")
                 onetensor = tf.constant(1, dtype=tf.int32)
                 self.mf_loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(tf.reshape(label,[-1]), dtype=tf.int32)-onetensor), logits=prediction) )
