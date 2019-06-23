@@ -87,7 +87,7 @@ def _train(args):
     config.gpu_options.visible_device_list = "0"
     with tf.Session(config=config) as sess:
         dataloader_train, dataloader_valid, max_row, max_col = create_dataloader_train(valid_ratio=args.valid_ratio, batch_size=args.batch_size)
-        dataloader_test, row_col_prediction, rcstrs = create_dataloader_test(batch_size=args.batch_size)
+        #dataloader_test, row_col_prediction, rcstrs = create_dataloader_test(batch_size=args.batch_size)
         iterator_test, row_col_prediction, rcstrs = create_dataloader_test(batch_size=args.batch_size)
         sess.run(iterator_test.initializer)
         dataloader_test = iterator_test.get_next()
