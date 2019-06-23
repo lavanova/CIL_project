@@ -427,8 +427,8 @@ class NeuCF2(object):
             outputs = session.run(output_feed, input_feed)
         
         elif args.external_embedding_type == 1:
-            row_graph_embedding = np.load(args.graph_embedding_row_path)
-            col_graph_embedding = np.load(args.graph_embedding_col_path)
+            row_graph_embedding = np.load(args.graph_embedding_row_path) * args.graph_embedding_scale[0]
+            col_graph_embedding = np.load(args.graph_embedding_col_path) * args.graph_embedding_scale[1]
             append_row = np.zeros((1, args.graph_embedding_dim))
             row_graph_embedding = np.concatenate( (append_row, row_graph_embedding), axis=0 )
             col_graph_embedding = np.concatenate( (append_row, col_graph_embedding), axis=0 )

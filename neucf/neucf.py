@@ -39,6 +39,8 @@ def parse_args():
                         help='load path to graph embedding of row')
     parser.add_argument('--graph_embedding_col_path', nargs='?', default='',
                         help='load path to graph embedding of col')
+    parser.add_argument('--graph_embedding_scale', nargs='?', default=[3.45, 5.57],
+                        help='scale factor for graph embedding')
     parser.add_argument('--loss_type', nargs='?', default='mse',
                         help='loss type:mse, cross_entropy,...')
     parser.add_argument('--num_factors', type=int, default=8,
@@ -196,4 +198,5 @@ if __name__ == '__main__':
     args = parse_args()
     args.layers = eval(args.layers)
     args.reg_layers = eval(args.reg_layers)
+    args.graph_embedding_scale = eval(args.graph_embedding_scale)
     _train(args)
