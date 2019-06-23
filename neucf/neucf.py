@@ -171,6 +171,7 @@ def _train(args):
                 valid_sse += batch_sse
             valid_sse = valid_sse / (args.valid_iter * args.batch_size)
             valid_rmse = np.sqrt(valid_sse)
+            print( '--Avg. Train Loss ='+str(epoch_loss)[:6] + '    --Avg. Valid Loss ='+str(valid_loss)[:6]+ '    --Valid RMSE = '+str(valid_rmse)[:6]+'\n' )
             logfile.write( '--Avg. Train Loss ='+str(epoch_loss)[:6] + '    --Avg. Valid Loss ='+str(valid_loss)[:6]+ '    --Valid RMSE = '+str(valid_rmse)[:6]+'\n' )
             logfile.flush()
             #saver.save(sess, os.path.join(args.log_path,'model'), global_step=i, write_meta_graph=False)
