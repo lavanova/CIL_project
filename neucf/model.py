@@ -225,6 +225,19 @@ class NeuCF2(object):
             self.nmf_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, n_components])
             self.nmf_embedding_col_init = NMF_Embedding_Col.assign(self.nmf_embedding_col_placeholder)
 
+            Graph_Embedding_Row = tf.get_variable(name="graph_embedding_row", shape=[row_num+1, args.graph_embedding_dim],
+                                                  dtype=tf.float32,
+                                                  regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                  trainable=args.external_embedding_trainable)
+            self.graph_embedding_row_placeholder = tf.placeholder(tf.float32, [row_num+1, args.graph_embedding_dim])
+            self.graph_embedding_row_init = Graph_Embedding_Row.assign(self.graph_embedding_row_placeholder)
+
+            Graph_Embedding_Col = tf.get_variable(name="graph_embedding_col", shape=[col_num+1, args.graph_embedding_dim],
+                                                  dtype=tf.float32,
+                                                  regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.reg_layers[0])),
+                                                  trainable=args.external_embedding_trainable)
+            self.graph_embedding_col_placeholder = tf.placeholder(tf.float32, [col_num+1, args.graph_embedding_dim])
+            self.graph_embedding_col_init = Graph_Embedding_Col.assign(self.graph_embedding_col_placeholder)
         spectral_row_latent = tf.nn.embedding_lookup(Spectral_Embedding_Row, row)
         spectral_col_latent = tf.nn.embedding_lookup(Spectral_Embedding_Col, col)
 
@@ -237,6 +250,8 @@ class NeuCF2(object):
         nmf_row_latent = tf.nn.embedding_lookup(NMF_Embedding_Row, row)
         nmf_col_latent = tf.nn.embedding_lookup(NMF_Embedding_Col, col)
 
+        graph_row_latent = tf.nn.embedding_lookup(Graph_Embedding_Row, row)
+        graph_col_latent = tf.nn.embedding_lookup(Graph_Embedding_Col, col)
         with tf.variable_scope("NeuCF"):
             """
             MF_Embedding_Row = tf.get_variable("mf_embedding_row", [row_num+1, args.num_factors], dtype=tf.float32,
@@ -265,11 +280,15 @@ class NeuCF2(object):
         #MLP part
         mlp_row_latent = tf.nn.embedding_lookup(MLP_Embedding_Row, row)
         mlp_col_latent = tf.nn.embedding_lookup(MLP_Embedding_Col, col)
-        mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
-                                       spectral_row_latent, spectral_col_latent,
-                                       lle_row_latent, lle_col_latent,
-                                       factor_row_latent, factor_col_latent,
-                                       nmf_row_latent, nmf_col_latent], axis=1)
+        if args.external_embedding_type == 0:
+            mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
+                                        spectral_row_latent, spectral_col_latent,
+                                        lle_row_latent, lle_col_latent,
+                                        factor_row_latent, factor_col_latent,
+                                        nmf_row_latent, nmf_col_latent], axis=1)
+        elif args.external_embedding_type == 1:
+            mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
+                                           graph_row_latent, graph_col_latent], axis=1)
         if args.loss_type == "cross_entropy":
             with tf.variable_scope("NeuCF"):
                 for idx in range(1, len(args.layers) - 1):
@@ -379,32 +398,46 @@ class NeuCF2(object):
                 self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
         
         self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
-    def init_embedding(self, session):
-        row_spectral_embedding = np.load('./data/row_spectral_embedding.npy')
-        col_spectral_embedding = np.load('./data/col_spectral_embedding.npy')
-        row_lle_embedding = np.load('./data/row_lle_embedding.npy')
-        col_lle_embedding = np.load('./data/col_lle_embedding.npy')
-        row_factor_embedding = np.load('./data/row_factor_embedding.npy')
-        col_factor_embedding = np.load('./data/col_factor_embedding.npy')
-        row_nmf_embedding = np.load('./data/row_nmf_embedding.npy')
-        col_nmf_embedding = np.load('./data/col_nmf_embedding.npy')
-        input_feed = {self.spectral_embedding_row_placeholder: row_spectral_embedding,
-                      self.spectral_embedding_col_placeholder: col_spectral_embedding,
-                      self.lle_embedding_row_placeholder: row_lle_embedding,
-                      self.lle_embedding_col_placeholder: col_lle_embedding,
-                      self.factor_embedding_row_placeholder: row_factor_embedding,
-                      self.factor_embedding_col_placeholder: col_factor_embedding,
-                      self.nmf_embedding_row_placeholder: row_nmf_embedding,
-                      self.nmf_embedding_col_placeholder: col_nmf_embedding}
-        output_feed = [self.spectral_embedding_row_init,
-                       self.spectral_embedding_col_init,
-                       self.lle_embedding_row_init,
-                       self.lle_embedding_col_init,
-                       self.factor_embedding_row_init,
-                       self.factor_embedding_col_init,
-                       self.nmf_embedding_row_init,
-                       self.nmf_embedding_col_init]
-        outputs = session.run(output_feed, input_feed)
+    def init_embedding(self, session, args):
+        if args.external_embedding_type == 0:
+            row_spectral_embedding = np.load('./data/row_spectral_embedding.npy')
+            col_spectral_embedding = np.load('./data/col_spectral_embedding.npy')
+            row_lle_embedding = np.load('./data/row_lle_embedding.npy')
+            col_lle_embedding = np.load('./data/col_lle_embedding.npy')
+            row_factor_embedding = np.load('./data/row_factor_embedding.npy')
+            col_factor_embedding = np.load('./data/col_factor_embedding.npy')
+            row_nmf_embedding = np.load('./data/row_nmf_embedding.npy')
+            col_nmf_embedding = np.load('./data/col_nmf_embedding.npy')
+            input_feed = {self.spectral_embedding_row_placeholder: row_spectral_embedding,
+                        self.spectral_embedding_col_placeholder: col_spectral_embedding,
+                        self.lle_embedding_row_placeholder: row_lle_embedding,
+                        self.lle_embedding_col_placeholder: col_lle_embedding,
+                        self.factor_embedding_row_placeholder: row_factor_embedding,
+                        self.factor_embedding_col_placeholder: col_factor_embedding,
+                        self.nmf_embedding_row_placeholder: row_nmf_embedding,
+                        self.nmf_embedding_col_placeholder: col_nmf_embedding}
+            output_feed = [self.spectral_embedding_row_init,
+                        self.spectral_embedding_col_init,
+                        self.lle_embedding_row_init,
+                        self.lle_embedding_col_init,
+                        self.factor_embedding_row_init,
+                        self.factor_embedding_col_init,
+                        self.nmf_embedding_row_init,
+                        self.nmf_embedding_col_init]
+            outputs = session.run(output_feed, input_feed)
+        
+        elif args.external_embedding_type == 1:
+            row_graph_embedding = np.load(args.graph_embedding_row_path)
+            col_graph_embedding = np.load(args.graph_embedding_col_path)
+            append_row = np.zeros((1, args.graph_embedding_dim))
+            row_graph_embedding = np.concatenate( (append_row, row_graph_embedding), axis=0 )
+            col_graph_embedding = np.concatenate( (append_row, col_graph_embedding), axis=0 )
+
+            input_feed = {self.graph_embedding_row_placeholder: row_graph_embedding,
+                          self.graph_embedding_col_placeholder: col_graph_embedding}
+            output_feed = [self.graph_embedding_row_init,
+                           self.graph_embedding_col_init]
+            outputs = session.run(output_feed, input_feed)
         return
     def step(self, session, isTraining=False, isValidating=False, isTesting=False, dropout_keep_prob=0.5, logging=False):
         input_feed = {self.isTraining: isTraining,

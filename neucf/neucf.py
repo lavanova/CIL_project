@@ -29,8 +29,16 @@ def parse_args():
                         help='valid train set split ratio')
     parser.add_argument('--external_embedding', type=bool, default=False,
                         help='whether use external embeddings')
+    parser.add_argument('--external_embedding_type', type=int, default=0,
+                        hlep='0: lle, spectral, nmf, factor; 1: neural graph embedding')
     parser.add_argument('--external_embedding_trainable', type=bool, default=False,
                         help='whether external embedding is trainable or not')
+    parser.add_argument('--graph_embedding_dim', type=int, default=256,
+                        help='dimension of graph embedding')
+    parser.add_argument('--graph_embedding_row_path', nargs='?', default='',
+                        help='load path to graph embedding of row')
+    parser.add_argument('--graph_embedding_col_path', nargs='?', default='',
+                        help='load path to graph embedding of col')
     parser.add_argument('--loss_type', nargs='?', default='mse',
                         help='loss type:mse, cross_entropy,...')
     parser.add_argument('--num_factors', type=int, default=8,
@@ -100,7 +108,7 @@ def _train(args):
                 sess.run(tf.global_variables_initializer())
 
             if args.external_embedding:
-                model_train.init_embedding(sess)
+                model_train.init_embedding(sess, args)
                 #model_valid.init_embedding(sess)
                 #model_test.init_embedding(sess)
         elif args.model == "NeuCF3":
@@ -117,7 +125,7 @@ def _train(args):
                 sess.run(tf.global_variables_initializer())
 
             if args.external_embedding:
-                model_train.init_embedding(sess)     
+                model_train.init_embedding(sess, args)     
         elif args.model == "NeuCF4":
             with tf.variable_scope("model", reuse=False):
                 model_train = NeuCF4(row_col_train, label_train, max_row, max_col, args)
@@ -132,7 +140,7 @@ def _train(args):
                 sess.run(tf.global_variables_initializer())
 
             if args.external_embedding:
-                model_train.init_embedding(sess)                   
+                model_train.init_embedding(sess, args)                   
         elif args.model == "NeuCF":
             with tf.variable_scope("model", reuse=False):
                 model_train = NeuCF(row_col_train, label_train, max_row, max_col, args)
