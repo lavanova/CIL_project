@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--external_embedding', type=bool, default=False,
                         help='whether use external embeddings')
     parser.add_argument('--external_embedding_type', type=int, default=0,
-                        hlep='0: lle, spectral, nmf, factor; 1: neural graph embedding')
+                        help='0: lle, spectral, nmf, factor; 1: neural graph embedding')
     parser.add_argument('--external_embedding_trainable', type=bool, default=False,
                         help='whether external embedding is trainable or not')
     parser.add_argument('--graph_embedding_dim', type=int, default=256,
