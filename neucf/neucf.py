@@ -39,7 +39,7 @@ def parse_args():
                         help='load path to graph embedding of row')
     parser.add_argument('--graph_embedding_col_path', nargs='?', default='',
                         help='load path to graph embedding of col')
-    parser.add_argument('--graph_embedding_scale', nargs='?', default=[3.45, 5.57],
+    parser.add_argument('--graph_embedding_scale', nargs='?', default='[3.45, 5.57]',
                         help='scale factor for graph embedding')
     parser.add_argument('--loss_type', nargs='?', default='mse',
                         help='loss type:mse, cross_entropy,...')
