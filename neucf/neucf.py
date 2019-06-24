@@ -189,7 +189,7 @@ def _train(args):
             
             # data frame is reconstructed since the direct modification is too slow
             df = pd.DataFrame({'Id': rcstrs,'Prediction': test_prediction})
-            df.to_csv(os.path.join(args.log_path, 'submission' + str(i)+".csv" ),index=False)
+            df.to_csv(os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ),index=False)
             sess.run(iterator_test.initializer)
             dataloader_test = iterator_test.get_next()
             row_col_test, label_test = dataloader_test
