@@ -32,7 +32,7 @@ def parse_args():
                         help='how many batches in one epoch')
     parser.add_argument('--dense_layer_size', type='?', default='[256,1024,512,256,128]',
                         help='dense layer size')
-    parser.add_argument('--dense_layer_regs', type='?', default='[0.0001,0.0001,0.0001,0.0001,0.0001]',
+    parser.add_argument('--dense_layer_regs', type='?', default='[0.00001,0.00001,0.00001,0.00001,0.00001]',
                         help='regularization scale for dense layer')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
@@ -298,7 +298,7 @@ class NGCF(object):
     def step(self, session, node_dropout, mess_dropout, dropout_keep_prob=0.5, isTraining=False, isValidating=False, isTesting=False, logging=False):
         #input_feed = {self.isTraining: isTraining,
         #              self.dropout_keep_prob: dropout_keep_prob}
-        input_feed = {self.isTraining: isTraining
+        input_feed = {self.isTraining: isTraining,
                       self.node_dropout: node_dropout,
                       self.mess_dropout: mess_dropout,
                       self.dropout_keep_prob: dropout_keep_prob}
