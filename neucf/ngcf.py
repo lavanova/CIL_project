@@ -30,9 +30,9 @@ def parse_args():
                         help='Number of epoch.')
     parser.add_argument('--epoch_iter', type=int, default=1150,
                         help='how many batches in one epoch')
-    parser.add_argument('--dense_layer_size', type='?', default='[256,1024,512,256,128]',
+    parser.add_argument('--dense_layer_size', nargs='?', default='[256,1024,512,256,128]',
                         help='dense layer size')
-    parser.add_argument('--dense_layer_regs', type='?', default='[0.00001,0.00001,0.00001,0.00001,0.00001]',
+    parser.add_argument('--dense_layer_regs', nargs='?', default='[0.00001,0.00001,0.00001,0.00001,0.00001]',
                         help='regularization scale for dense layer')
     parser.add_argument('--batch_norm', type=bool, default=True,
                         help='whether use batch normalization')
