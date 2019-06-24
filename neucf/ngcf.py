@@ -30,6 +30,12 @@ def parse_args():
                         help='Number of epoch.')
     parser.add_argument('--epoch_iter', type=int, default=1150,
                         help='how many batches in one epoch')
+    parser.add_argument('--dense_layer_size', type='?', default='[256,1024,512,256,128]',
+                        help='dense layer size')
+    parser.add_argument('--dense_layer_regs', type='?', default='[0.0001,0.0001,0.0001,0.0001,0.0001]',
+                        help='regularization scale for dense layer')
+    parser.add_argument('--batch_norm', type=bool, default=True,
+                        help='whether use batch normalization')
     parser.add_argument('--valid_iter', type=int, default=40,
                         help='how many batches used to do validation')
     parser.add_argument('--embed_size', type=int, default=64,
@@ -56,7 +62,8 @@ def parse_args():
                         help='mse, l1, cross_entropy')
     parser.add_argument('--gpu_id', type=int, default=0,
                         help='0 for NAIS_prod, 1 for NAIS_concat')
-
+    parser.add_argument('--dense_layer_dropout_keep_prob', type=float, default=0.5,
+                        help='dropout_keep_prob for dense layer')
     parser.add_argument('--node_dropout_flag', type=int, default=0,
                         help='0: Disable node dropout, 1: Activate node dropout')
     parser.add_argument('--node_dropout', nargs='?', default='[0.1]',
@@ -76,7 +83,9 @@ def parse_args():
     parser.add_argument('--report', type=int, default=0,
                         help='0: Disable performance report w.r.t. sparsity levels, 1: Show performance report w.r.t. sparsity levels')
     return parser.parse_args()
+def kaiming(shape, dtype, partition_info=None):
 
+    return(tf.truncated_normal(shape, dtype=dtype)*tf.sqrt(2/float(shape[0])))
 class NGCF(object):
     def __init__(self, row_col, label, data_config, args, pretrain_data=None):
         # argument settings
@@ -130,6 +139,8 @@ class NGCF(object):
         self.mess_dropout = tf.placeholder(tf.float32, shape=[None])
         classtensor = tf.constant([1,2,3,4,5], dtype=tf.float32)
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
+        self.isTraining = tf.placeholder(tf.bool, name="isTrainingflag")
+        self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         """
         *********************************************************
         Create Model Parameters (i.e., Initialize Weights).
@@ -168,7 +179,44 @@ class NGCF(object):
         #if args.loss_type == 'mse':
         #    prediction = tf.reduce_sum(tf.multiply(row_g_embeddings, col_g_embeddings), axis=1)
         if args.end_to_end:
-            pass
+            with tf.variable_scope("ngcf"):
+                MLP_Embedding_Row = tf.get_variable("mlp_embedding_row", [self.n_users, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
+                                                    initializer=kaiming, 
+                                                    regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
+                                                    trainable=True)
+
+                MLP_Embedding_Col = tf.get_variable("mlp_embedding_col", [self.n_items, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
+                                                    initializer=kaiming, 
+                                                    regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
+                                                    trainable=True)      
+            mlp_row_latent = tf.nn.embedding_lookup(MLP_Embedding_Row, row)
+            mlp_col_latent = tf.nn.embedding_lookup(MLP_Embedding_Col, col)   
+            mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
+                                           row_g_embeddings, col_g_embeddings], axis=1)  
+            if args.loss_type == "cross_entropy":
+                with tf.variable_scope("ngcf"):
+                    for idx in range(1, len(args.dense_layer_size) - 1):
+                        mlp_vector = tf.layers.dense(mlp_vector, args.dense_layer_size[idx],
+                                                    #activation=tf.nn.relu,
+                                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[idx])),
+                                                    name="dense_layer%d" %idx)
+                        if args.batch_norm:
+                            mlp_vector = tf.layers.batch_normalization(mlp_vector, training=self.isTraining, name="batch_normalization%d"%idx)
+                        mlp_vector = tf.nn.relu(mlp_vector)
+                        mlp_vector = tf.nn.dropout(mlp_vector, self.dropout_keep_prob)
+                    mlp_vector = tf.layers.dense(mlp_vector, args.dense_layer_size[len(args.dense_layer_size) - 1],
+                                                activation=tf.nn.relu,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[len(args.dense_layer_size) - 1])),
+                                                name="dense_layer%d" %(len(args.dense_layer_size) - 1))
+                #predict_vector = tf.concat(values=[mf_vector, mlp_vector], axis=1)
+                with tf.variable_scope("ngcf"):
+                    mlp_vector = tf.layers.dense(mlp_vector, 5,
+                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[len(args.dense_layer_size) - 1])),
+                                                name="dense_layer_final")
+                onetensor = tf.constant(1, dtype=tf.int32)
+                self.mf_loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=(tf.cast(tf.reshape(label,[-1]), dtype=tf.int32)-onetensor), logits=mlp_vector) )
+                probability = tf.nn.softmax(mlp_vector)
+                self.prediction = tf.reduce_sum( tf.multiply(probability, classtensor) , axis=1)
         else:
             if args.loss_type == 'mse':
                 row_col_g_embeddings = tf.concat([row_g_embeddings, col_g_embeddings], axis=1)
@@ -247,11 +295,13 @@ class NGCF(object):
         #self.loss = self.mf_loss + self.emb_loss + self.reg_loss
 
         #self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
-    def step(self, session, node_dropout, mess_dropout, isTraining=False, isValidating=False, isTesting=False, logging=False):
+    def step(self, session, node_dropout, mess_dropout, dropout_keep_prob=0.5, isTraining=False, isValidating=False, isTesting=False, logging=False):
         #input_feed = {self.isTraining: isTraining,
         #              self.dropout_keep_prob: dropout_keep_prob}
-        input_feed = {self.node_dropout: node_dropout,
-                      self.mess_dropout: mess_dropout}
+        input_feed = {self.isTraining: isTraining
+                      self.node_dropout: node_dropout,
+                      self.mess_dropout: mess_dropout,
+                      self.dropout_keep_prob: dropout_keep_prob}
         if isTraining:
             if logging:
                 #output_feed = [self.updates, 
@@ -516,6 +566,8 @@ if __name__ == '__main__':
     args.node_dropout = eval(args.node_dropout)
     args.mess_dropout = eval(args.mess_dropout)
     args.Ks = eval(args.Ks)
+    args.dense_layer_size = eval(args.dense_layer_size)
+    args.dense_layer_regs = eval(args.dense_layer_regs)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
     data_config = dict()
     data_config['n_users'] = 10000
@@ -560,14 +612,14 @@ if __name__ == '__main__':
             epoch_loss = 0
             epoch_mf_loss = 0
             for j in tqdm(range(args.epoch_iter)):
-                batch_loss, batch_mf_loss = model_train.step(sess, args.node_dropout, args.mess_dropout, isTraining=True)
+                batch_loss, batch_mf_loss = model_train.step(sess, args.node_dropout, args.mess_dropout, dropout_keep_prob=args.dense_layer_dropout_keep_prob, isTraining=True)
                 epoch_loss += batch_loss / args.epoch_iter
                 epoch_mf_loss += batch_mf_loss / args.epoch_iter
             valid_loss = 0
             valid_mf_loss = 0
             valid_sse = 0
             for j in tqdm(range(args.valid_iter)):
-                batch_loss, batch_mf_loss, batch_sse = model_valid.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), isValidating=True)
+                batch_loss, batch_mf_loss, batch_sse = model_valid.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isValidating=True)
                 valid_loss += batch_loss / args.valid_iter
                 valid_mf_loss += batch_mf_loss / args.valid_iter
                 valid_sse += batch_sse
