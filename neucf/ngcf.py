@@ -30,6 +30,8 @@ def parse_args():
                         help='Number of epoch.')
     parser.add_argument('--epoch_iter', type=int, default=1150,
                         help='how many batches in one epoch')
+    parser.add_argument('--dense_layer_type', type=int, default=0,
+                        help='dense layer type')
     parser.add_argument('--dense_layer_size', nargs='?', default='[256,1024,512,256,128]',
                         help='dense layer size')
     parser.add_argument('--dense_layer_regs', nargs='?', default='[0.00001,0.00001,0.00001,0.00001,0.00001]',
@@ -179,20 +181,26 @@ class NGCF(object):
         #if args.loss_type == 'mse':
         #    prediction = tf.reduce_sum(tf.multiply(row_g_embeddings, col_g_embeddings), axis=1)
         if args.end_to_end:
-            with tf.variable_scope("ngcf"):
-                MLP_Embedding_Row = tf.get_variable("mlp_embedding_row", [self.n_users, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
-                                                    initializer=kaiming, 
-                                                    regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
-                                                    trainable=True)
+            if args.dense_layer_type == 0:
+                with tf.variable_scope("ngcf"):
+                    MLP_Embedding_Row = tf.get_variable("mlp_embedding_row", [self.n_users, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
+                                                        initializer=kaiming, 
+                                                        regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
+                                                        trainable=True)
 
-                MLP_Embedding_Col = tf.get_variable("mlp_embedding_col", [self.n_items, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
-                                                    initializer=kaiming, 
-                                                    regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
-                                                    trainable=True)      
-            mlp_row_latent = tf.nn.embedding_lookup(MLP_Embedding_Row, row)
-            mlp_col_latent = tf.nn.embedding_lookup(MLP_Embedding_Col, col)   
-            mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
-                                           row_g_embeddings, col_g_embeddings], axis=1)  
+                    MLP_Embedding_Col = tf.get_variable("mlp_embedding_col", [self.n_items, int(args.dense_layer_size[0]/2)], dtype=tf.float32,
+                                                        initializer=kaiming, 
+                                                        regularizer=tf.contrib.layers.l2_regularizer(scale=float(args.dense_layer_regs[0])),
+                                                        trainable=True)      
+                mlp_row_latent = tf.nn.embedding_lookup(MLP_Embedding_Row, row)
+                mlp_col_latent = tf.nn.embedding_lookup(MLP_Embedding_Col, col)   
+                mlp_vector = tf.concat(values=[mlp_row_latent, mlp_col_latent,
+                                            row_g_embeddings, col_g_embeddings], axis=1)  
+            
+            elif args.dense_layer_type == 1:
+                mlp_vector = tf.concat(values=[row_g_embeddings, col_g_embeddings],
+                                       axis=1)
+            
             if args.loss_type == "cross_entropy":
                 with tf.variable_scope("ngcf"):
                     for idx in range(1, len(args.dense_layer_size) - 1):
