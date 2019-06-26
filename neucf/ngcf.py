@@ -334,11 +334,11 @@ class NGCF(object):
                            self.sse]
             outputs = session.run(output_feed, input_feed)
             return outputs[0], outputs[1], outputs[2]
-        """
+        
         elif isTesting:
             outputs = session.run(self.prediction, input_feed)
             return outputs   
-        """ 
+        
     def _init_weights(self):
         all_weights = dict()
 
@@ -613,9 +613,30 @@ if __name__ == '__main__':
         with tf.variable_scope("model", reuse=True):
             model_valid = NGCF(data_generator.row_col_valid, data_generator.label_valid, data_config, args, pretrain_data=None)
             sess.run(tf.global_variables_initializer())
+        sess.run([data_generator.iterator_test.initializer,
+                  data_generator.iterator_output.initializer,
+                  data_generator.iterator_output_valid.initializer])
+        dataloader_test = data_generator.iterator_test.get_next()
+        dataloader_output = data_generator.iterator_output.get_next()
+        dataloader_output_valid = data_generator.iterator_output_valid.get_next()
+        row_col_test, label_test = dataloader_test
+        row_col_output, label_output = dataloader_output
+        row_col_output_valid, label_output_valid = dataloader_output_valid
+        with tf.variable_scope("model", reuse=True):
+            model_test = NGCF(row_col_test, label_test, data_config, args, pretrain_data=None)
+            sess.run(tf.global_variables_initializer())
+        with tf.variable_scope("model", reuse=True):
+            model_output = NGCF(row_col_output, label_output, data_config, args, pretrain_data=None)
+            sess.run(tf.global_variables_initializer())
+        with tf.variable_scope("model", reuse=True):
+            model_output_valid = NGCF(row_col_output_valid, label_output_valid, data_config, args, pretrain_data=None)
+            sess.run(tf.global_variables_initializer())
+
+        #vars = [v for v in tf.global_variables() if v.name.startswith("model/NeuCF")]
+        saver = tf.train.Saver(max_to_keep=200)        
         should_stop = False
         stopping_step = 0
-        cur_best_pre_0 = 1000
+        cur_best_pre_0 = 1.0
         for i in range(args.epoch):
             epoch_loss = 0
             epoch_mf_loss = 0
@@ -636,12 +657,13 @@ if __name__ == '__main__':
             print('--Avg. Train Loss ='+str(epoch_loss)[:6] + '    --Avg. Train MF Loss ='+ str(epoch_mf_loss)[:6]+'    --Avg. Valid Loss ='+str(valid_loss)[:6]+ '     --Avg. Valid MF Loss ='+str(valid_mf_loss)[:6] +'    --Valid RMSE = '+str(valid_rmse)[:6])
             logfile.write( '--Avg. Train Loss ='+str(epoch_loss)[:6] + '    --Avg. Train MF Loss ='+ str(epoch_mf_loss)[:6]+'    --Avg. Valid Loss ='+str(valid_loss)[:6]+ '     --Avg. Valid MF Loss ='+str(valid_mf_loss)[:6] +'    --Valid RMSE = '+str(valid_rmse)[:6]+'\n' )
             logfile.flush()
-            cur_best_pre_0, stopoing_step, should_stop = early_stopping(valid_rmse, cur_best_pre_0, 
+            cur_best_pre_0, stopping_step, should_stop = early_stopping(valid_rmse, cur_best_pre_0, 
                                                                         stopping_step, expected_order='dec',
                                                                         flag_step=5)
             if should_stop == True:
                 break
             if valid_rmse == cur_best_pre_0 and args.save_flag == 1:
+                saver.save(sess, os.path.join(args.log_path,'model'), global_step=i+1, write_meta_graph=False)
                 input_feed = {model_valid.node_dropout: [0.]*len(args.layer_size),
                               model_valid.mess_dropout: [0.]*len(args.layer_size)}
                 output_feed = [model_valid.ua_embeddings,
@@ -651,4 +673,48 @@ if __name__ == '__main__':
                 np.save(os.path.join(args.log_path)+'row_embedding_'+str(i+1)+'.npy', ua_embeddings)
 
                 np.save(os.path.join(args.log_path)+'col_embedding_'+str(i+1)+'.npy', ia_embeddings)
+
+                output_prediction = None
+                for j in tqdm(range( math.ceil( len(data_generator.rcstrs_output) / args.batch_size) )):
+                    predict = model_output.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
+                    if j == 0:
+                        output_prediction = predict
+                    else:
+                        output_prediction = np.concatenate([output_prediction, predict], axis=0)
+                output_prediction = np.reshape(output_prediction, (output_prediction.shape[0],))
+                df = pd.DataFrame( {'Id': data_generator.rcstrs_output,'Prediction': output_prediction} )
+                df.to_csv(os.path.join(args.log_path, 'output' + str(i+1)+".csv" ),index=False)
+
+                output_valid_prediction = None
+                for j in tqdm(range( math.ceil( len(data_generator.rcstrs_output_valid) / args.batch_size) )):
+                    predict = model_output_valid.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
+                    if j == 0:
+                        output_valid_prediction = predict
+                    else:
+                        output_valid_prediction = np.concatenate( [output_valid_prediction, predict] , axis=0 )
+                output_valid_prediction = np.reshape(output_valid_prediction, (output_valid_prediction.shape[0],))
+                df = pd.DataFrame( {'Id': data_generator.rcstrs_output_valid,'Prediction': output_valid_prediction} )
+                df.to_csv(os.path.join(args.log_path, 'output_valid' + str(i+1)+".csv" ),index=False)
+                test_prediction = None
+                for j in tqdm(range(math.ceil( len(data_generator.rcstrs_test) / args.batch_size))):
+                    predict = model_test.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
+                    if j == 0:
+                        test_prediction = predict
+                    else:
+                        test_prediction = np.concatenate([test_prediction, predict], axis=0)
+                test_prediction = np.reshape(test_prediction, (test_prediction.shape[0],))
+                
+                # data frame is reconstructed since the direct modification is too slow
+                df = pd.DataFrame({'Id': data_generator.rcstrs_test,'Prediction': test_prediction})
+                df.to_csv(os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ),index=False)
+                sess.run([data_generator.iterator_test.initializer,
+                          data_generator.iterator_output.initializer,
+                          data_generator.iterator_output_valid.initializer])
+                dataloader_test = data_generator.iterator_test.get_next()
+                dataloader_output = data_generator.iterator_output.get_next()
+                dataloader_output_valid = data_generator.iterator_output_valid.get_next()
+                row_col_test, label_test = dataloader_test
+                row_col_output, label_output = dataloader_output
+                row_col_output_valid, label_output_valid = dataloader_output_valid
+
     #_train(args)
