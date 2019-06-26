@@ -43,13 +43,13 @@ def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH, sample = parameters.SAMPL
 def LoadRawData(inpath = parameters.RAWDATA_PATH, no_index=True):
     rawdata = pd.read_csv(inpath)
     result = []
-    for i in rawdata:
+    for i in rawdata.values:
         if no_index:
             result.append(i[1])
         else:
             r, c = GetRC(i[0])
             result.append([r, c, i[1]])
-    return result
+    return np.array(result)
 
 
 def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
