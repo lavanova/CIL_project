@@ -20,6 +20,8 @@ def parse_args():
                         help='Project path.')
     parser.add_argument('--log_path', nargs='?', default='./log/model/',
                         help='log path')
+    parser.add_argument('--flag_step', type=int, default=20,
+                        help='flag step')
     parser.add_argument('--dataset', nargs='?', default='gowalla',
                         help='Choose a dataset from {gowalla, yelp2018, amazon-book}')
     parser.add_argument('--pretrain', type=int, default=0,
@@ -659,7 +661,7 @@ if __name__ == '__main__':
             logfile.flush()
             cur_best_pre_0, stopping_step, should_stop = early_stopping(valid_rmse, cur_best_pre_0, 
                                                                         stopping_step, expected_order='dec',
-                                                                        flag_step=5)
+                                                                        flag_step=args.flag_step)
             if should_stop == True:
                 break
             if valid_rmse == cur_best_pre_0 and args.save_flag == 1:

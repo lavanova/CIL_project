@@ -17,6 +17,8 @@ def parse_args():
                         help='log path')
     parser.add_argument('--save_flag', type=bool, default=True,
                         help='whether save')
+    parser.add_argument('--flag_step', type=int, default=100,
+                        help='flag step')
     parser.add_argument('--dataset', nargs='?', default='ml-1m',
                         help='Choose a dataset.')
     parser.add_argument('--model', nargs='?', default='NeuCF2',
@@ -216,7 +218,7 @@ def _train(args):
             logfile.flush()
             cur_best_pre_0, stopping_step, should_stop = early_stopping(valid_rmse, cur_best_pre_0, 
                                                                         stopping_step, expected_order='dec',
-                                                                        flag_step=5)
+                                                                        flag_step=args.flag_step)
             if should_stop == True:
                 break
             #saver.save(sess, os.path.join(args.log_path,'model'), global_step=i, write_meta_graph=False)
