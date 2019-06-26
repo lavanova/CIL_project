@@ -53,6 +53,7 @@ class Data(object):
         label = np.asarray(label, dtype=np.float32).reshape((-1,)) #reshape??
     
         sample_num = label.shape[0]
+        np.random.seed(1234)
         index = np.random.permutation(sample_num)
         row_col = row_col[index]
         label = label[index]

@@ -68,6 +68,7 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     assert row_col.shape[0] == label.shape[0], "error sample number doesn't match with label number"
 
     sample_num = label.shape[0]
+    np.random.seed(1234)
     index = np.random.permutation(sample_num)
     row_col = row_col[index]
     label = label[index]
