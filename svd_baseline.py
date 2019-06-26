@@ -27,7 +27,7 @@ def ColFill(data, mask):
     col_fill = (1 - mask) * (col_mean) + data
     return col_fill
 
-def ColAdjFill(data, mask, K=25):
+def ColAdjFill(data, mask, K=15):
     global_mean = float(np.sum(data)) / np.sum(mask)
     col_mean = (np.sum(data, axis=0) / np.sum(mask, axis=0)).reshape(1, parameters.NCOLS)  # 1 * 1000
     col_sum = np.sum(mask, axis=0).reshape(1, parameters.NCOLS)  # 1 * 1000
@@ -40,7 +40,7 @@ def RowFill(data, mask):
     row_fill = (1 - mask) * row_mean + data
     return row_fill
 
-def RowAdjFill(data, mask, K=25):
+def RowAdjFill(data, mask, K=15):
     global_mean = float(np.sum(data)) / np.sum(mask)
     row_mean = (np.sum(data, axis=1) / np.sum(mask, axis=1)).reshape(parameters.NROWS, 1)  # 10000 * 1
     row_sum = np.sum(mask, axis=1).reshape(parameters.NROWS, 1)  # 10000 * 1
@@ -48,7 +48,7 @@ def RowAdjFill(data, mask, K=25):
     adj_row_fill = (1 - mask) * adj_row_mean + data
     return adj_row_fill
 
-def RateAdjustedFill(data, mask, K=20):
+def RateAdjustedFill(data, mask, K=15):
     global_mean = float(np.sum(data))/np.sum(mask)
     col_mean = ( np.sum(data, axis=0) /np.sum(mask, axis=0) ).reshape(1, parameters.NCOLS) # 1 * 1000
     col_sum = np.sum(mask, axis=0).reshape(1, parameters.NCOLS)    # 1 * 1000
@@ -62,14 +62,16 @@ def RateAdjustedFill(data, mask, K=20):
     return heur_fill
 
 
-def SVDBaseline(data, mask, k=50):
+def SVDBaseline(data, mask, fcn=RateAdjustedFill, k=30):
     # filled_data = MeanFill(data,mask)
     # filled_data = ColFill(data, mask)
-    # filled_data = ColAdjFill(data, mask, K=20)
+    # filled_data = ColAdjFill(data, mask, K=10)
     # filled_data = RowFill(data, mask)
-    # filled_data = RowAdjFill(data, mask, K=20)
+    # filled_data = RowAdjFill(data, mask, K=10)
     # filled_data = HeuristicFill(data, mask)
-    filled_data = RateAdjustedFill(data, mask, K=10)
+    # filled_data = RateAdjustedFill(data, mask, K=10)
+
+    filled_data = fcn(data, mask)
 
     print("SVD Baseline: ")
     print("start svd")
