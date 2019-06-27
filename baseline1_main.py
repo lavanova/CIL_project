@@ -64,6 +64,6 @@ def ALS_main(small=True, medium=True, big=True):
         ALSmodel(epochs=5, factors=50, regularizer=25, valopath=valprefix + name, testopath=testprefix + name)
 
 if __name__ == "__main__":
-    # svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust'])
-    # KNN_main(item=True, user=True)
-    # ALS_main(small=True, medium=True, big=True)
+    svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust'])
+    KNN_main(item=True, user=True)
+    ALS_main(small=True, medium=True, big=True)
