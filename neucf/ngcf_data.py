@@ -53,14 +53,17 @@ class Data(object):
                 label.append(rating)
         row_col = np.asarray(row_col)
         label = np.asarray(label, dtype=np.float32).reshape((-1,)) #reshape??
-        row_col_output = np.copy(row_col)
-        label_output = np.copy(label)
+        #row_col_output = np.copy(row_col)
+        #label_output = np.copy(label)
 
         sample_num = label.shape[0]
         np.random.seed(1234)
         index = np.random.permutation(sample_num)
         row_col = row_col[index]
         label = label[index]
+        self.rcstrs_output = list( np.asarray(self.rcstrs_output)[index] )
+        row_col_output = np.copy(row_col)
+        label_output = np.copy(label)
     
         valid_num = int(sample_num * valid_ratio)
         valid_sample = row_col[0: valid_num, :]

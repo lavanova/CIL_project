@@ -26,8 +26,8 @@ setup(
     python_requires='>=3.5',
     install_requires=[
         # Add external libraries here.
-        'tensorflow-gpu==1.12.0',
-        # 'tensorflow==1.12.0',
+        #'tensorflow-gpu==1.12.0',
+        'tensorflow==1.12.0',
         'numpy',
         'patool',
         'opencv-python',
@@ -37,6 +37,7 @@ setup(
         'scipy==1.2.1',
         'progress',
         'torch',
-        'pandas'
+        'pandas',
+        'scikit-learn==0.21.2'
     ],
 )

@@ -14,6 +14,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run NGCF.")
     parser.add_argument('--weights_path', nargs='?', default='',
                         help='Store model path.')
+    parser.add_argument('--mode', type=int, default=0,
+                        help='0: training; 1: inference on valid set and test set with pretrained model')
+    parser.add_argument('--model_path', nargs='?', default=''
+                        help='load path of pretrained model')     
+    parser.add_argument('--test_path', nargs='?', default='',
+                        help='when in mode 1, path of output of test')
+    parser.add_argument('--output_valid_path', nargs='?', default='',
+                        help='when in mode 1, path of output of output_valid') 
     parser.add_argument('--data_path', nargs='?', default='../data/',
                         help='Input data path.')
     parser.add_argument('--proj_path', nargs='?', default='',
@@ -635,7 +643,33 @@ if __name__ == '__main__':
             sess.run(tf.global_variables_initializer())
 
         #vars = [v for v in tf.global_variables() if v.name.startswith("model/NeuCF")]
-        saver = tf.train.Saver(max_to_keep=200)        
+        saver = tf.train.Saver(max_to_keep=200)       
+
+        if args.mode == 1:
+            saver.restore(sess, args.model_path)
+            output_valid_prediction = None
+            for j in tqdm(range( math.ceil( len(data_generator.rcstrs_output_valid) / args.batch_size) )):
+                predict = model_output_valid.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
+                if j == 0:
+                    output_valid_prediction = predict
+                else:
+                    output_valid_prediction = np.concatenate( [output_valid_prediction, predict] , axis=0 )
+            output_valid_prediction = np.reshape(output_valid_prediction, (output_valid_prediction.shape[0],))
+            df = pd.DataFrame( {'Id': data_generator.rcstrs_output_valid,'Prediction': output_valid_prediction} )
+            df.to_csv(args.output_valid_path, index=False)
+            test_prediction = None
+            for j in tqdm(range(math.ceil( len(data_generator.rcstrs_test) / args.batch_size))):
+                predict = model_test.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
+                if j == 0:
+                    test_prediction = predict
+                else:
+                    test_prediction = np.concatenate([test_prediction, predict], axis=0)
+            test_prediction = np.reshape(test_prediction, (test_prediction.shape[0],))
+            
+            # data frame is reconstructed since the direct modification is too slow
+            df = pd.DataFrame({'Id': data_generator.rcstrs_test,'Prediction': test_prediction})
+            df.to_csv(args.test_path, index=False)            
+            sys.exit()
         should_stop = False
         stopping_step = 0
         cur_best_pre_0 = 1.0
