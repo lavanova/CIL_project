@@ -67,8 +67,8 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     
     row_col = np.asarray(row_col)
     label = np.asarray(label, dtype=np.float32).reshape((-1, 1)) #reshape??
-    row_col_output = np.copy(row_col)
-    label_output = np.copy(label)
+    #row_col_output = np.copy(row_col)
+    #label_output = np.copy(label)
     assert row_col.shape[0] == label.shape[0], "error sample number doesn't match with label number"
 
     sample_num = label.shape[0]
@@ -76,6 +76,9 @@ def create_dataloader_train(valid_ratio=0.1, batch_size=256):
     index = np.random.permutation(sample_num)
     row_col = row_col[index]
     label = label[index]
+    rcstrs = list( np.asarray(rcstrs)[index] )
+    row_col_output = np.copy(row_col)
+    label_output = np.copy(label)
 
     valid_num = int(sample_num * valid_ratio)
     valid_sample = row_col[0: valid_num, :]
