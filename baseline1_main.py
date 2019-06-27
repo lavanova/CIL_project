@@ -4,7 +4,7 @@ from utils import *
 from ALS import ALS
 from svd_baseline import *
 import numpy as np
-from KNN import KNNmain
+from surprise_models import surprise_model
 
 '''
 Main function for getting validation for ALS and SVD
@@ -47,8 +47,10 @@ def svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_row
         testopath = testprefix + model_names[i]
         dense_model(model=SVDBaseline, fcn=loadfcns[i], valopath=valopath, testopath=testopath)
 
-def KNN_main(item=True, user=True):
-    KNNmain(item=item, user=user)
+
+def surprise_main(item=True, user=True, slope=True, svdp=True):
+    surprise_model(item=item, user=user, slope=slope, svdp=svdp)
+
 
 def ALS_main(small=True, medium=True, big=True):
     valprefix = 'cache/'
@@ -63,7 +65,8 @@ def ALS_main(small=True, medium=True, big=True):
         name = 'ALS_big'
         ALSmodel(epochs=5, factors=50, regularizer=25, valopath=valprefix + name, testopath=testprefix + name)
 
+
 if __name__ == "__main__":
     svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust'])
-    KNN_main(item=True, user=True)
     ALS_main(small=True, medium=True, big=True)
+    surprise_main(item=True, user=True, slope=True, svdp=True)

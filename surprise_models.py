@@ -291,14 +291,32 @@ def KNNmain(item=True, user=True):
         name = 'KNN_user'
         knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': True})
 
+def surprise_model(item=True, user=True, slope=True, svdp=True):
+    train = load_csv('data/trainTruth.csv')
+    val = load_csv('data/valTruth.csv')
+    test = load_csv('data/sampleSubmission.csv')
+
+    if item:
+        name = 'KNN_item'
+        knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': False})
+    if user:
+        name = 'KNN_user'
+        knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': True})
+    if slope:
+        name = 'slopeOne'
+        slopeOne(train, val, test, name)
+    if svdp:
+        name = 'SVDpp'
+        SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 10, reg_all = 0.01, lr_all=0.01)
+
 
 if __name__ == "__main__":
     train = load_csv('data/trainTruth.csv')
     val = load_csv('data/valTruth.csv')
     test = load_csv('data/sampleSubmission.csv')
-    name = 'KNN_item'
+    # name = 'KNN_item'
     # knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': False})
-    # name = 'SVDpp'
-    # SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 25, reg_all = 0.05, lr_all=0.005)
-    name = 'slopeOne'
-    slopeOne(train, val, test, name)
+    name = 'SVDpp'
+    SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 5, reg_all = 0.01, lr_all=0.01)
+    # name = 'slopeOne'
+    # slopeOne(train, val, test, name)
