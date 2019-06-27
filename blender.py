@@ -34,6 +34,9 @@ def blender(args):
     weight_dic = {}
     for model in model_names:
         pred_dic[model] = LoadRawData(csvdir+model)
+        mse = np.mean(np.square(trueval - pred_dic[model]))
+        rmse = np.sqrt(np.mean(np.square(trueval - pred_dic[model])))
+        print(model+' rmse: '+str(rmse)+'   mse: '+str(mse))
     assert(len(model_names) == len(pred_dic))
     initval = np.ones(len(model_names)) / len(model_names)
     res = sco.minimize(eval_, initval, method='SLSQP', args=(pred_dic, trueval), options={'maxiter':1000, 'disp':True})
