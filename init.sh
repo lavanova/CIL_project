@@ -11,3 +11,9 @@ if [ -d ./cache ]; then
 else
 	mkdir cache
 fi
+
+if [ -d ./test ]; then
+	echo "Test directory already exist"
+else
+	mkdir test
+fi

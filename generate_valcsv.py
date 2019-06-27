@@ -20,25 +20,24 @@ Main function for getting validation for ALS and SVD
 # filled_data = RateAdjustedFill(data, mask, K=10)
 
 
-def dense_model(model=SVDBaseline, fcn = RateAdjustedFill, opath = 'svd.csv'):
+def dense_model(model=SVDBaseline, fcn = RateAdjustedFill, valopath = 'cache/default', testopath = 'test/default'):
     train_data, train_mask, val_data, val_mask = LoadFixedValDataMask()
     result_data = model(train_data, train_mask, fcn)
     rmse = getRMSE(result_data, val_data, val_mask)
     print("Validation loss is:", rmse)
-    WriteToCSV(result_data, path=opath, sample=parameters.VALTRUTH_PATH)
+    WriteToCSV(result_data, path=valopath, sample=parameters.VALTRUTH_PATH)
+    WriteToCSV(result_data, path=testopath, sample=parameters.SAMPLECSV_PATH)
 
 
 def svd_main():
     loadfcns = [MeanFill, ColFill, ColAdjFill, RowFill, RowAdjFill, HeuristicFill, RateAdjustedFill]
     model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust']
-    opaths = [None for i in range(len(model_names))]
-    prefix = 'cache/'
-    suffix = ''
+    valprefix = 'cache/'
+    testprefix = 'test/'
     for i in range(len(model_names)):
-        opath = prefix + model_names[i] + suffix
-        opaths[i] = opath
-        dense_model(model=SVDBaseline, fcn=loadfcns[i], opath=opath)
-
+        valopath = valprefix + model_names[i]
+        testopath = testprefix + model_names[i]
+        dense_model(model=SVDBaseline, fcn=loadfcns[i], valopath=valopath, testopath=testopath)
 
 
 if __name__ == "__main__":
