@@ -3,6 +3,17 @@ import numpy as np
 from utils import *
 from os import listdir
 from os.path import isfile, join
+import os
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Blender.")
+    parser.add_argument('--mode', type=int, default=0,
+                        help='0: blend all models;  1: blend specified models')
+
+    parser.add_argument('--models', nargs='?', default='["KNN_item", "svd_col"]')
+    
+    return parser.parse_args()
 
 
 def eval_(x, pred_dic, trueval):
@@ -12,10 +23,13 @@ def eval_(x, pred_dic, trueval):
     return np.sqrt(np.mean(np.square(values - trueval)))
 
 
-def blender():
+def blender(args):
     trueval = LoadRawData(parameters.VALTRUTH_PATH)
     csvdir = 'cache/'
-    model_names = [f for f in listdir(csvdir) if isfile(join(csvdir, f))]
+    if args.mode == 0:
+        model_names = [f for f in listdir(csvdir) if isfile(join(csvdir, f))]
+    elif args.mode == 1:
+        model_names = args.models
     pred_dic = {}
     weight_dic = {}
     for model in model_names:
@@ -30,9 +44,12 @@ def blender():
         pt += 1
     return weight_dic
 
-def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH):
+def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH, args=None):
     testdir = 'test/'
-    model_names = [f for f in listdir(testdir) if isfile(join(testdir, f))]
+    if args.mode == 0:
+        model_names = [f for f in listdir(testdir) if isfile(join(testdir, f))]
+    elif args.mode == 1:
+        model_names = args.models
     result = 0
     for model in model_names:
         assert (model in weight_dic), "ApplyBlender: test csv key not found"
@@ -59,6 +76,10 @@ def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH):
 #     print("writing completed")
 
 if __name__ == '__main__':
-    weight_dic = blender()
+    args = parse_args()
+    print(type(args.models))
+    print(args.models)
+    args.models = eval(args.models)
+    weight_dic = blender(args)
     print(weight_dic)
-    applyblender(weight_dic)
+    applyblender(weight_dic, args=args)
