@@ -9,6 +9,7 @@ import math
 import pandas as pd
 from utils import early_stopping
 from tqdm import tqdm
+import sys
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run NGCF.")
@@ -16,7 +17,7 @@ def parse_args():
                         help='Store model path.')
     parser.add_argument('--mode', type=int, default=0,
                         help='0: training; 1: inference on valid set and test set with pretrained model')
-    parser.add_argument('--model_path', nargs='?', default=''
+    parser.add_argument('--model_path', nargs='?', default='',
                         help='load path of pretrained model')     
     parser.add_argument('--test_path', nargs='?', default='',
                         help='when in mode 1, path of output of test')
