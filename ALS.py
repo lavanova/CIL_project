@@ -63,9 +63,9 @@ def ALS(data, mask, epochs = 5, factors=50, regularizer=0.01):
 
     for i in range(epochs):
         print("Iteration: " + str(i))
-        ALS_iterU(data, mask, U, V, regularizer=0.01)
+        ALS_iterU(data, mask, U, V, regularizer=regularizer)
         print(calc_cost(data, mask, U, V))
-        ALS_iterV(data, mask, U, V, regularizer=0.01)
+        ALS_iterV(data, mask, U, V, regularizer=regularizer)
         print(calc_cost(data, mask, U, V))
 
     recondata = np.clip(U.T @ V, a_min = 1, a_max = 5)

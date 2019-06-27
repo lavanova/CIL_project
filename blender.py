@@ -9,7 +9,7 @@ def eval_(x, pred_dic, trueval):
     values = np.stack([pred_dic[i] for i in pred_dic], axis=0)
     x = x.reshape([len(pred_dic), 1])
     values = np.sum(x*values, axis=0)
-    return np.mean(np.square(values - trueval))
+    return np.sqrt(np.mean(np.square(values - trueval)))
 
 
 def blender():
