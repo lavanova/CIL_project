@@ -41,7 +41,6 @@ def knn(train, validation, test, fn, **kwargs):
     """
     K Nearest Neighbors with Baseline from library Surprise
     """
-
     # Get parameters
     k = kwargs['k']
     sim_options = kwargs['sim_options']
@@ -118,6 +117,168 @@ def knn(train, validation, test, fn, **kwargs):
     val_submission.to_csv(val_fn, index=False)
 
 
+def SVDsuprise(train, validation, test, fn, **kwargs):
+    """
+    SVD++ from library Surprise
+    """
+    # Get parameters
+    n_factors = kwargs['n_factors']
+    n_epochs = kwargs['n_epochs']
+    reg_all = kwargs['reg_all']
+    lr_all = kwargs['lr_all']
+
+    # First, we need to dump the pandas DF into files
+    train_file = 'tmp_train.csv'
+    test_file = 'tmp_test.csv'
+    val_file = 'tmp_val.csv'
+    train.to_csv(train_file, index=False, header=False)
+    test.to_csv(test_file, index=False, header=False)
+    validation.to_csv(val_file, index=False, header=False)
+
+    # Create Reader
+    reader = Reader(line_format='user item rating', sep=',')
+
+    # Train and test set for Surprise
+    fold_val = [(train_file, val_file)]
+    fold_test = [(train_file, test_file)]
+
+    # Load the data
+    data_val = Dataset.load_from_folds(fold_val, reader=reader)
+    data_test = Dataset.load_from_folds(fold_test, reader=reader)
+
+    # Algorithm
+    # algo = SVDpp(sim_options=sim_options)
+    algo = SVDpp(n_factors=n_factors, n_epochs=n_epochs, reg_all=reg_all, lr_all=lr_all, verbose=True)
+
+    for trainset, valset in data_val.folds():
+        # Train
+        algo.fit(trainset)
+        # Validation
+        valpred = algo.test(valset)
+
+    for trainset, testset in data_test.folds():
+        testpred = algo.test(testset)
+
+    # Clipping:
+    tpred = np.zeros(len(testpred))
+    vpred = np.zeros(len(valpred))
+    for i in range(len(testpred)):
+        val = testpred[i].est
+        if val > 5:
+            tpred[i] = 5
+        elif val < 1:
+            tpred[i] = 1
+        else:
+            tpred[i] = val
+
+    for i in range(len(valpred)):
+        val = valpred[i].est
+        if val > 5:
+            vpred[i] = 5
+        elif val < 1:
+            vpred[i] = 1
+        else:
+            vpred[i] = val
+
+    # Copy the test
+    test_df = test.copy()
+    test_df.Rating = tpred
+
+    val_df = validation.copy()
+    val_df.Rating = vpred
+
+
+    val_submission = submission_table(val_df, 'User', 'Movie', 'Rating')
+    test_submission = submission_table(test_df, 'User', 'Movie', 'Rating')
+
+    val_fn = 'cache/' + fn
+    test_fn = 'test/' + fn
+
+    print("Writing test file:")
+    test_submission.to_csv(test_fn, index=False)
+    print("Writing validation file:")
+    val_submission.to_csv(val_fn, index=False)
+
+
+def slopeOne(train, validation, test, fn):
+    """
+    slopeOne from library Surprise
+    """
+    # Get parameters
+
+    # First, we need to dump the pandas DF into files
+    train_file = 'tmp_train.csv'
+    test_file = 'tmp_test.csv'
+    val_file = 'tmp_val.csv'
+    train.to_csv(train_file, index=False, header=False)
+    test.to_csv(test_file, index=False, header=False)
+    validation.to_csv(val_file, index=False, header=False)
+
+    # Create Reader
+    reader = Reader(line_format='user item rating', sep=',')
+
+    # Train and test set for Surprise
+    fold_val = [(train_file, val_file)]
+    fold_test = [(train_file, test_file)]
+
+    # Load the data
+    data_val = Dataset.load_from_folds(fold_val, reader=reader)
+    data_test = Dataset.load_from_folds(fold_test, reader=reader)
+
+    # Algorithm
+    # algo = SVDpp(sim_options=sim_options)
+    algo = SlopeOne()
+
+    for trainset, valset in data_val.folds():
+        # Train
+        algo.fit(trainset)
+        # Validation
+        valpred = algo.test(valset)
+
+    for trainset, testset in data_test.folds():
+        testpred = algo.test(testset)
+
+    # Clipping:
+    tpred = np.zeros(len(testpred))
+    vpred = np.zeros(len(valpred))
+    for i in range(len(testpred)):
+        val = testpred[i].est
+        if val > 5:
+            tpred[i] = 5
+        elif val < 1:
+            tpred[i] = 1
+        else:
+            tpred[i] = val
+
+    for i in range(len(valpred)):
+        val = valpred[i].est
+        if val > 5:
+            vpred[i] = 5
+        elif val < 1:
+            vpred[i] = 1
+        else:
+            vpred[i] = val
+
+    # Copy the test
+    test_df = test.copy()
+    test_df.Rating = tpred
+
+    val_df = validation.copy()
+    val_df.Rating = vpred
+
+
+    val_submission = submission_table(val_df, 'User', 'Movie', 'Rating')
+    test_submission = submission_table(test_df, 'User', 'Movie', 'Rating')
+
+    val_fn = 'cache/' + fn
+    test_fn = 'test/' + fn
+
+    print("Writing test file:")
+    test_submission.to_csv(test_fn, index=False)
+    print("Writing validation file:")
+    val_submission.to_csv(val_fn, index=False)
+
+
 def KNNmain(item=True, user=True):
     train = load_csv('data/trainTruth.csv')
     val = load_csv('data/valTruth.csv')
@@ -130,9 +291,14 @@ def KNNmain(item=True, user=True):
         name = 'KNN_user'
         knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': True})
 
+
 if __name__ == "__main__":
     train = load_csv('data/trainTruth.csv')
     val = load_csv('data/valTruth.csv')
     test = load_csv('data/sampleSubmission.csv')
     name = 'KNN_item'
-    knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': False})
+    # knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': False})
+    # name = 'SVDpp'
+    # SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 25, reg_all = 0.05, lr_all=0.005)
+    name = 'slopeOne'
+    slopeOne(train, val, test, name)

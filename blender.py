@@ -12,7 +12,7 @@ def parse_args():
                         help='0: blend all models;  1: blend specified models')
 
     parser.add_argument('--models', nargs='?', default='["KNN_item", "svd_col"]')
-    
+
     return parser.parse_args()
 
 
@@ -47,6 +47,18 @@ def blender(args):
         pt += 1
     return weight_dic
 
+def checkdist():
+    csvdir = 'cache/'
+    model_names = [f for f in listdir(csvdir) if isfile(join(csvdir, f))]
+    pred_dic = {}
+    for model in model_names:
+        pred_dic[model] = LoadRawData(csvdir+model)
+    assert(len(model_names) == len(pred_dic))
+    values = np.stack([pred_dic[i] for i in pred_dic], axis=0)
+    avgvar = np.mean(np.std(values, axis=0))
+    return avgvar
+
+
 def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH, args=None):
     testdir = 'test/'
     if args.mode == 0:
@@ -79,6 +91,7 @@ def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH, args=None):
 #     print("writing completed")
 
 if __name__ == '__main__':
+    # print(checkdist())
     args = parse_args()
     print(type(args.models))
     print(args.models)
