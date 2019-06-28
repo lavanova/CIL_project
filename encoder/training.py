@@ -32,8 +32,10 @@ tf.app.flags.DEFINE_float('learning_rate_decay',1,
 tf.app.flags.DEFINE_boolean('l2_reg', True,
                             'L2 regularization.'
                             )
-tf.app.flags.DEFINE_float('lambda_',0.01,
+tf.app.flags.DEFINE_float('lambda_',0.001,
                           'Wight decay factor.')
+tf.app.flags.DEFINE_float('drop_out_prob',0.5,
+                          'drop out prob.')
 
 tf.app.flags.DEFINE_integer('num_v', 1000,
                             'Number of visible neurons (Number of movies the users rated.)')
@@ -48,8 +50,10 @@ tf.app.flags.DEFINE_integer('num_layer1', 256,
 tf.app.flags.DEFINE_integer('num_layer2', 128,
                             'Number of layer 2 .')
 
-tf.app.flags.DEFINE_boolean('constrain', False,
+tf.app.flags.DEFINE_boolean('constrain', True,
                             'if constrained.')
+tf.app.flags.DEFINE_boolean('batch_normalization', True,
+                            'batch_normalization.')
 FLAGS = tf.app.flags.FLAGS
 def main(_):
     '''Building the graph, opening of a session and starting the training od the neural network.'''
@@ -128,7 +132,7 @@ def main(_):
             sess.run(iter_train.initializer)
             sess.run(iter_train_infer.initializer)
             sess.run(iter_test.initializer) 
-            x_train_infer=tf.where(tf.equal(x_train_infer,0.0), x_test, x_train_infer)
+            #x_train_infer=tf.where(tf.equal(x_train_infer,0.0), x_test, x_train_infer)
             
             for i in range(FLAGS.num_samples):
                 

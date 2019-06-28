@@ -53,35 +53,69 @@ class BaseModel(object):
         
         with tf.name_scope('inference'):
             
-            if is_training:
-                if self.FLAGS.constrain:
-                    a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
-                    a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
-                    a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2)),self.b3))   
-                    a4=tf.nn.dropout(tf.matmul(a3, tf.transpose(self.W_1)),keep_prob=1)
-                    
+            if self.FLAGS.batch_normalization:
+                if is_training:
+                    if self.FLAGS.constrain:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))),keep_prob=self.FLAGS.drop_out_prob)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))),keep_prob=self.FLAGS.drop_out_prob)
+                        a3=tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2))),self.b3))   
+                        a4=tf.nn.dropout(tf.layers.batch_normalization(tf.matmul(a3, tf.transpose(self.W_1))),keep_prob=1)
+                        
+                    else:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))),keep_prob=self.FLAGS.drop_out_prob)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))),keep_prob=self.FLAGS.drop_out_prob)
+                        a3=tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3)))   
+                        a4=tf.nn.dropout(tf.layers.batch_normalization(tf.matmul(a3, self.W_4)),keep_prob=1)
+                        '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
+                        #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
+                        #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.matmul(a1, self.W_4)'''
                 else:
-                    a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
-                    a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
-                    a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
-                    a4=tf.nn.dropout(tf.matmul(a3, self.W_4),keep_prob=1)
-                    '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
-                    #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
-                    #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
-                    a4=tf.matmul(a1, self.W_4)'''
+                    if self.FLAGS.constrain:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))),keep_prob=s1)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))),keep_prob=1)
+                        a3=tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2))),self.b3))   
+                        a4=tf.nn.dropout(tf.layers.batch_normalization(tf.matmul(a3, tf.transpose(self.W_1))),keep_prob=1)
+                        
+                    else:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))),keep_prob=1)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))),keep_prob=1)
+                        a3=tf.nn.tanh(tf.layers.batch_normalization(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3)))   
+                        a4=tf.nn.dropout(tf.layers.batch_normalization(tf.matmul(a3, self.W_4)),keep_prob=1)
+                        '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
+                        #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
+                        #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.matmul(a1, self.W_4)'''
             else:
-                if self.FLAGS.constrain:
-                    a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
-                    a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
-                    a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2)),self.b3))   
-                    a4=tf.nn.dropout(tf.matmul(a3, tf.transpose(self.W_1)),keep_prob=1)
+                if is_training:
+                    if self.FLAGS.constrain:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=self.FLAGS.drop_out_prob)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=self.FLAGS.drop_out_prob)
+                        a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2)),self.b3))   
+                        a4=tf.nn.dropout(tf.matmul(a3, tf.transpose(self.W_1)),keep_prob=1)
+                        
+                    else:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=self.FLAGS.drop_out_prob)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=self.FLAGS.drop_out_prob)
+                        a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.nn.dropout(tf.matmul(a3, self.W_4),keep_prob=1)
+                        '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
+                        #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
+                        #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.matmul(a1, self.W_4)'''
                 else:
-                    a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
-                    a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
-                    a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
-                    a4=tf.nn.dropout(tf.matmul(a3, self.W_4),keep_prob=1)
-                    '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
-                    #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
-                    #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
-                    a4=tf.matmul(a1, self.W_4)'''
+                    if self.FLAGS.constrain:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
+                        a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, tf.transpose(self.W_2)),self.b3))   
+                        a4=tf.nn.dropout(tf.matmul(a3, tf.transpose(self.W_1)),keep_prob=1)
+                    else:
+                        a1=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1)),keep_prob=1)
+                        a2=tf.nn.dropout(tf.nn.tanh(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2)),keep_prob=1)
+                        a3=tf.nn.tanh(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.nn.dropout(tf.matmul(a3, self.W_4),keep_prob=1)
+                        '''a1=(tf.nn.bias_add(tf.matmul(x, self.W_1),self.b1))
+                        #a2=(tf.nn.bias_add(tf.matmul(a1, self.W_2),self.b2))
+                        #a3=(tf.nn.bias_add(tf.matmul(a2, self.W_3),self.b3))   
+                        a4=tf.matmul(a1, self.W_4)'''
         return a4
