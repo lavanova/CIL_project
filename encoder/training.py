@@ -18,19 +18,21 @@ tf.app.flags.DEFINE_string('tf_records_test_path',
 tf.app.flags.DEFINE_string('checkpoints_path', os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'checkpoints/model.ckpt')), 
                            'Path for the test data.')
 
-tf.app.flags.DEFINE_integer('num_epoch', 50,
+tf.app.flags.DEFINE_integer('num_epoch', 80,
                             'Number of training epochs.')
 
 tf.app.flags.DEFINE_integer('batch_size', 16,
                             'Size of the training batch.')
 
-tf.app.flags.DEFINE_float('learning_rate',0.001,
+tf.app.flags.DEFINE_float('learning_rate',0.00005,
                           'Learning_Rate')
+tf.app.flags.DEFINE_float('learning_rate_decay',1,
+                          'Learning_Rate decay')
 
 tf.app.flags.DEFINE_boolean('l2_reg', True,
                             'L2 regularization.'
                             )
-tf.app.flags.DEFINE_float('lambda_',0.001,
+tf.app.flags.DEFINE_float('lambda_',0.01,
                           'Wight decay factor.')
 
 tf.app.flags.DEFINE_integer('num_v', 1000,
@@ -41,10 +43,14 @@ tf.app.flags.DEFINE_integer('num_h', 1000,
 
 tf.app.flags.DEFINE_integer('num_samples', 10000,
                             'Number of training samples (Number of users, who gave a rating).')
+tf.app.flags.DEFINE_integer('num_layer1', 256,
+                            'Number of layer 1 .')
+tf.app.flags.DEFINE_integer('num_layer2', 128,
+                            'Number of layer 2 .')
 
+tf.app.flags.DEFINE_boolean('constrain', False,
+                            'if constrained.')
 FLAGS = tf.app.flags.FLAGS
-
-
 def main(_):
     '''Building the graph, opening of a session and starting the training od the neural network.'''
     
@@ -67,7 +73,8 @@ def main(_):
 
         train_op, train_loss_op,outputs_op=model.train(x_train)
         prediction, labels, test_loss_op, mae_ops=model._validation_loss(x_train_infer, x_test)
-        
+        prediction_test=model._test_loss(x_train_infer, x_test)
+
         saver=tf.train.Saver()
         
         with tf.Session() as sess:
@@ -90,6 +97,8 @@ def main(_):
                     train_loss+=loss_
                     #print(x_train_)
                     #print(outputs_)
+                    #print(loss_)
+                    
                 
                 for i in range(FLAGS.num_samples):
                     
@@ -101,6 +110,10 @@ def main(_):
 
                     test_loss.append(loss_)
                     mae.append(mae_)
+                
+                sess.run(model.learning_rate_op)
+
+
                     
                     
                 print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f, mean_abs_error: %.3f'
@@ -119,13 +132,12 @@ def main(_):
             
             for i in range(FLAGS.num_samples):
                 
-                pred, _, _,_,x_train_infer_=sess.run((prediction, labels, test_loss_op,mae_ops,x_train_infer))   
+                pred=sess.run(prediction_test)
                 preds.append(pred)
-                if i<5:
-                    print((x_train_infer_))
-                    print(pred)
+                
             preds=np.array(preds)
             preds=preds.reshape(10000,1000)
+            #preds=denormalizeData(preds,3.8572805008190647,4.016329062225046)
             WriteToCSV(preds,path='encoder.csv')
                     
 if __name__ == "__main__":

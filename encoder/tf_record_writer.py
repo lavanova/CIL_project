@@ -92,7 +92,7 @@ def main():
         while i < num_samples:
            
             tf_filename = _get_output_filename(dir_, fidx,  name=name)
-            print(tf_filename)
+            #print(tf_filename)
             
             with tf.python_io.TFRecordWriter(tf_filename) as tfrecord_writer:
                 
@@ -100,7 +100,7 @@ def main():
                 
                 while i < num_samples and j < SAMPLES_PER_FILES:
                     
-                    #sys.stdout.write('\r>> Converting sample %d/%d' % (i+1, num_samples))
+                    sys.stdout.write('\r>> Converting sample %d/%d' % (i+1, num_samples))
                     sys.stdout.flush()
     
                     sample = data_set[i]
