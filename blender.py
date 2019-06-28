@@ -69,6 +69,7 @@ def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH, args=None):
     for model in model_names:
         assert (model in weight_dic), "ApplyBlender: test csv key not found"
         result += weight_dic[model] * LoadRawData(testdir + model)
+    result = np.clip(result, a_min = 1, a_max = 5)
     sample = parameters.SAMPLECSV_PATH
     template = pd.read_csv(sample)
     rcstrs = template.values[:,0]
