@@ -22,9 +22,9 @@ np.array (10000*1000), [path] -> None
 Write the result file to the specific path,
 default is: parameters.OUTPUTCSV_PATH  # './out.csv'
 '''
-def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH): # expect the input to be a matrix
+def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH, sample = parameters.SAMPLECSV_PATH): # expect the input to be a matrix
     print("writing result to csv")
-    template = pd.read_csv(parameters.SAMPLECSV_PATH)
+    template = pd.read_csv(sample)
     size = template.values.shape[0]
     rcstrs = [None] * size
     values = [0] * size
@@ -40,13 +40,16 @@ def WriteToCSV(data, path = parameters.OUTPUTCSV_PATH): # expect the input to be
     print("writing completed")
 
 
-def LoadRawData(inpath = parameters.RAWDATA_PATH):
+def LoadRawData(inpath = parameters.RAWDATA_PATH, no_index=True):
     rawdata = pd.read_csv(inpath)
     result = []
-    for i in rawdata:
-        r, c = GetRC(i[0])
-        result.append([r, c, i[1]])
-    return result
+    for i in rawdata.values:
+        if no_index:
+            result.append(i[1])
+        else:
+            r, c = GetRC(i[0])
+            result.append([r, c, i[1]])
+    return np.array(result)
 
 
 def LoadDataMask(save = 0, outpathdata = parameters.MATRAW_PATH,
@@ -96,15 +99,6 @@ valper: percentage of the validation data
 '''
 def LoadTrainValDataMask(valper=0.15, inpath = parameters.RAWDATA_PATH):
     rawdata = pd.read_csv(inpath)
-    '''data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
-    mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
-    for i in rawdata.values:
-        r, c = GetRC(i[0])
-        data[r,c] = i[1]
-        mask[r,c] = 1
-    data,mean,std=normalizeDataMask(data, mask)
-    print(mean)
-    print(std)'''
     train_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
     train_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
     val_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
@@ -112,16 +106,57 @@ def LoadTrainValDataMask(valper=0.15, inpath = parameters.RAWDATA_PATH):
     for i in rawdata.values:
         r, c = GetRC(i[0])
         dice = random.uniform(0, 1)
-        
         if dice < valper:
-            val_data[r,c] = (i[1])
+            val_data[r,c] = i[1]
             val_mask[r,c] = 1
         else:
-            train_data[r,c] = (i[1])
+            train_data[r,c] = i[1]
             train_mask[r,c] = 1
-    #data,mean,std=normalizeDataMask(data, mask)
     print("Load train validation data mask complete")
     return train_data, train_mask, val_data, val_mask
+
+def getPermutedIndices(sample_num):
+    np.random.seed(1234)
+    index = np.random.permutation(sample_num)
+    return index
+
+
+def LoadFixedValDataMask(valid_ratio=0.1, inpath = parameters.RAWDATA_PATH, cache=False):
+    rawdata = pd.read_csv(inpath)
+    train_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    train_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    val_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    val_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+
+    sample_num = len(rawdata.values)
+    index = getPermutedIndices(sample_num)
+
+    values = rawdata.values[index] # shuffled values
+    valid_num = int(valid_ratio * sample_num) # number of validation
+    # ct = 0
+    if cache:
+        rcstrs = []
+        preds = []
+    for ind, i in enumerate(values):
+        r, c = GetRC(i[0])
+        if ind < valid_num:
+            # if ct < 10:
+            #     print(i[0])
+            #     ct += 1
+            if cache:
+                rcstrs.append(i[0])
+                preds.append(i[1])
+            val_data[r,c] = i[1]
+            val_mask[r,c] = 1
+        else:
+            train_data[r,c] = i[1]
+            train_mask[r,c] = 1
+    if cache:
+        df = pd.DataFrame({'Id': rcstrs, 'Prediction': preds})
+        df.to_csv("data/valTruth.csv", index=False)
+    print("Load fixed train validation data mask complete")
+    return train_data, train_mask, val_data, val_mask
+
 
 
 '''

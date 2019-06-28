@@ -18,7 +18,7 @@ tf.app.flags.DEFINE_string('tf_records_test_path',
 tf.app.flags.DEFINE_string('checkpoints_path', os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'checkpoints/model.ckpt')), 
                            'Path for the test data.')
 
-tf.app.flags.DEFINE_integer('num_epoch', 80,
+tf.app.flags.DEFINE_integer('num_epoch', 20,
                             'Number of training epochs.')
 
 tf.app.flags.DEFINE_integer('batch_size', 16,
@@ -138,7 +138,9 @@ def main(_):
             preds=np.array(preds)
             preds=preds.reshape(10000,1000)
             #preds=denormalizeData(preds,3.8572805008190647,4.016329062225046)
-            WriteToCSV(preds,path='encoder.csv')
+            #WriteToCSV(preds,path='encoder.csv')
+            WriteToCSV(preds, path='cache/default', sample=parameters.VALTRUTH_PATH)
+            WriteToCSV(preds, path='test/default', sample=parameters.SAMPLECSV_PATH)
                     
 if __name__ == "__main__":
     

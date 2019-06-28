@@ -79,7 +79,7 @@ def main():
 
     print('\nFinished converting the dataset!')'''
     SAMPLES_PER_FILES=100
-    train_data, train_mask, val_data, val_mask=LoadTrainValDataMask()  
+    train_data, train_mask, val_data, val_mask=LoadFixedValDataMask()
     print(len(train_data))
     print(len(val_data))
     for data_set, name, dir_ in zip([train_data, val_data], ['train', 'test'], [TF_RECORD_TRAIN_PATH, TF_RECORD_TEST_PATH]):
