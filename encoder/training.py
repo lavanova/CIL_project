@@ -128,7 +128,7 @@ def main(_):
             sess.run(iter_train.initializer)
             sess.run(iter_train_infer.initializer)
             sess.run(iter_test.initializer) 
-            x_train_infer=tf.where(tf.equal(x_train_infer,0.0), x_test, x_train_infer)
+            #x_train_infer=tf.where(tf.equal(x_train_infer,0.0), x_test, x_train_infer)
             
             for i in range(FLAGS.num_samples):
                 
