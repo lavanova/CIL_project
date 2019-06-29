@@ -30,3 +30,6 @@ cp /cluster/scratch/huangxin/normal_ngcfemb_decay3500/submission59.csv ../test/n
 
 cp /cluster/scratch/huangxin/basenn_8/output_valid31.csv ../cache/basenn_8_31
 cp /cluster/scratch/huangxin/basenn_8/submission31.csv ../test/basenn_8_31
+
+cp /cluster/scratch/huangxin/basenn_16/output_valid16.csv ../cache/basenn_16_16
+cp /cluster/scratch/huangxin/basenn_16/submission16.csv ../test/basenn_16_16
