@@ -9,6 +9,7 @@ class TrainModel(BaseModel):
         super(TrainModel,self).__init__(FLAGS)
         self.learning_rate = tf.Variable( float(self.FLAGS.learning_rate), trainable=False, dtype=tf.float32 )   # Learning rate.
         self.learning_rate_op=self.learning_rate.assign( self.learning_rate * self.FLAGS.learning_rate_decay )
+        self.global_step = tf.Variable(0, trainable=False, name="global_step")
         self._init_parameters()
         
         
@@ -45,11 +46,11 @@ class TrainModel(BaseModel):
         outputs=tf.where(bool_mask, outputs, tf.zeros_like(outputs))
     
         MSE_loss=self._compute_loss(outputs, x_test, num_test_labels)
-        RMSE_loss=tf.sqrt(MSE_loss)
+        #RMSE_loss=tf.sqrt(MSE_loss)
         ab_ops= tf.cond(num_test_labels>0,lambda:tf.div(tf.reduce_sum(tf.abs(tf.subtract(x_test,outputs))),num_test_labels),lambda:0.0)
         
             
-        return outputs, x_test, RMSE_loss, ab_ops
+        return outputs, x_test, MSE_loss, ab_ops
     
     def _test_loss(self, x_train, x_test):
         
@@ -94,7 +95,16 @@ class TrainModel(BaseModel):
         #train_op=tf.train.AdagradOptimizer(self.learning_rate).minimize(MSE_loss)
         #train_op=tf.train.AdagradOptimizer(self.learning_rate).minimize(MSE_loss)
         #train_op=tf.train.AdadeltaOptimizer(self.learning_rate).minimize(MSE_loss)
-        train_op=tf.train.AdamOptimizer(self.learning_rate).minimize(MSE_loss)
+        optimizer = tf.train.AdamOptimizer(self.learning_rate)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            params = tf.trainable_variables()
+            gradients = optimizer.compute_gradients(MSE_loss)
+            grads, variables = zip(*gradients)
+            grads, _ = tf.clip_by_global_norm(grads, 5)
+            parameter_update = optimizer.apply_gradients(zip(grads, variables), global_step=self.global_step)
+        #train_op=tf.train.AdamOptimizer(self.learning_rate).minimize(MSE_loss)
+
         RMSE_loss=tf.sqrt(MSE_loss)
 
-        return train_op, RMSE_loss,outputs
+        return parameter_update, RMSE_loss,outputs
