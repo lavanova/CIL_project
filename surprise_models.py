@@ -199,6 +199,99 @@ def SVDsuprise(train, validation, test, fn, **kwargs):
     print("Writing validation file:")
     val_submission.to_csv(val_fn, index=False)
 
+def NMFsuprise(train, validation, test, fn, **kwargs):
+    """
+    SVD++ from library Surprise
+    """
+    # Get parameters
+    n_factors = kwargs['n_factors']
+    n_epochs = kwargs['n_epochs']
+    biased = kwargs['biased']
+    reg_pu = kwargs['reg_pu']
+    reg_qi = kwargs['reg_qi']
+    reg_bu = kwargs['reg_bu']
+    reg_bi = kwargs['reg_bi']
+    lr_bu = kwargs['lr_bu']
+    lr_bi = kwargs['lr_bi']
+    init_low = kwargs['init_low']
+    init_high = kwargs['init_high']
+
+
+
+    # First, we need to dump the pandas DF into files
+    train_file = 'tmp_train.csv'
+    test_file = 'tmp_test.csv'
+    val_file = 'tmp_val.csv'
+    train.to_csv(train_file, index=False, header=False)
+    test.to_csv(test_file, index=False, header=False)
+    validation.to_csv(val_file, index=False, header=False)
+
+    # Create Reader
+    reader = Reader(line_format='user item rating', sep=',')
+
+    # Train and test set for Surprise
+    fold_val = [(train_file, val_file)]
+    fold_test = [(train_file, test_file)]
+
+    # Load the data
+    data_val = Dataset.load_from_folds(fold_val, reader=reader)
+    data_test = Dataset.load_from_folds(fold_test, reader=reader)
+
+    # Algorithm
+    # algo = NMF
+    algo = NMF(n_factors=n_factors, n_epochs=n_epochs, biased=biased, reg_pu=reg_pu, reg_qi=reg_qi,
+               reg_bu=reg_bu, reg_bi=reg_bi, lr_bu=lr_bu, lr_bi=lr_bi, init_low=init_low,
+               init_high=init_high, verbose=True)
+
+    for trainset, valset in data_val.folds():
+        # Train
+        algo.fit(trainset)
+        # Validation
+        valpred = algo.test(valset)
+
+    for trainset, testset in data_test.folds():
+        testpred = algo.test(testset)
+
+    # Clipping:
+    tpred = np.zeros(len(testpred))
+    vpred = np.zeros(len(valpred))
+    for i in range(len(testpred)):
+        val = testpred[i].est
+        if val > 5:
+            tpred[i] = 5
+        elif val < 1:
+            tpred[i] = 1
+        else:
+            tpred[i] = val
+
+    for i in range(len(valpred)):
+        val = valpred[i].est
+        if val > 5:
+            vpred[i] = 5
+        elif val < 1:
+            vpred[i] = 1
+        else:
+            vpred[i] = val
+
+    # Copy the test
+    test_df = test.copy()
+    test_df.Rating = tpred
+
+    val_df = validation.copy()
+    val_df.Rating = vpred
+
+
+    val_submission = submission_table(val_df, 'User', 'Movie', 'Rating')
+    test_submission = submission_table(test_df, 'User', 'Movie', 'Rating')
+
+    val_fn = 'cache/' + fn
+    test_fn = 'test/' + fn
+
+    print("Writing test file:")
+    test_submission.to_csv(test_fn, index=False)
+    print("Writing validation file:")
+    val_submission.to_csv(val_fn, index=False)
+
 
 def slopeOne(train, validation, test, fn):
     """
@@ -291,7 +384,7 @@ def KNNmain(item=True, user=True):
         name = 'KNN_user'
         knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': True})
 
-def surprise_model(item=True, user=True, slope=True, svdp=True):
+def surprise_model(item=True, user=True, slope=True, svdp=True, nmf=True):
     train = load_csv('data/trainTruth.csv')
     val = load_csv('data/valTruth.csv')
     test = load_csv('data/sampleSubmission.csv')
@@ -308,7 +401,10 @@ def surprise_model(item=True, user=True, slope=True, svdp=True):
     if svdp:
         name = 'SVDpp'
         SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 10, reg_all = 0.01, lr_all=0.01)
-
+    if nmf:
+        name = 'NMF'
+        NMFsuprise(train, val, test, name, n_factors = 15, n_epochs = 100, biased=True, reg_pu=0.06, reg_qi=0.06, reg_bu=0.02,
+                   reg_bi=0.02, lr_bu=0.005, lr_bi=0.005, init_low=0, init_high=1)
 
 if __name__ == "__main__":
     train = load_csv('data/trainTruth.csv')
@@ -316,7 +412,12 @@ if __name__ == "__main__":
     test = load_csv('data/sampleSubmission.csv')
     # name = 'KNN_item'
     # knn(train, val, test, name, k=60, sim_options={'name': 'pearson_baseline', 'user_based': False})
-    name = 'SVDpp'
-    SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 5, reg_all = 0.01, lr_all=0.01)
+    #name = 'SVDpp'
+    #SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 5, reg_all = 0.01, lr_all=0.01)
+    #name = 'SVDpp'
+    #SVDsuprise(train, val, test, name, n_factors = 10, n_epochs = 80, reg_all = 0.05, lr_all=0.005)
     # name = 'slopeOne'
     # slopeOne(train, val, test, name)
+    name = 'NMF'
+    NMFsuprise(train, val, test, name, n_factors = 15, n_epochs = 100, biased=True, reg_pu=0.06, reg_qi=0.06, reg_bu=0.02,
+               reg_bi=0.02, lr_bu=0.005, lr_bi=0.005, init_low=0, init_high=1)
