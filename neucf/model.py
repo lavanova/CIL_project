@@ -123,12 +123,10 @@ class NeuCF(object):
                 return outputs[1]
         
         elif isValidating:
-            output_feed = [self.loss_summary,
-                           self.rmse_summary,
-                           self.loss,
+            output_feed = [self.loss,
                            self.sse]
             outputs = session.run(output_feed, input_feed)
-            return outputs[2], outputs[3]
+            return outputs[0], outputs[1]
 
         elif isTesting:
             outputs = session.run(self.prediction, input_feed)
@@ -431,8 +429,29 @@ class NeuCF2(object):
             outputs = session.run(output_feed, input_feed)
         
         elif args.external_embedding_type == 1:
-            row_graph_embedding = np.load(args.graph_embedding_row_path) * args.graph_embedding_scale[0]
-            col_graph_embedding = np.load(args.graph_embedding_col_path) * args.graph_embedding_scale[1]
+            row_spectral_embedding = np.load('./data/row_spectral_embedding.npy')
+            col_spectral_embedding = np.load('./data/col_spectral_embedding.npy')
+            row_lle_embedding = np.load('./data/row_lle_embedding.npy')
+            col_lle_embedding = np.load('./data/col_lle_embedding.npy')
+            row_factor_embedding = np.load('./data/row_factor_embedding.npy')
+            col_factor_embedding = np.load('./data/col_factor_embedding.npy')
+            row_nmf_embedding = np.load('./data/row_nmf_embedding.npy')
+            col_nmf_embedding = np.load('./data/col_nmf_embedding.npy')
+            row_normal_embedding = np.concatenate((row_spectral_embedding, row_lle_embedding, row_factor_embedding, row_nmf_embedding),axis=1)
+            row_normal_embedding_10000 = row_normal_embedding[1:,:]
+            col_normal_embedding = np.concatenate((col_spectral_embedding, col_lle_embedding, col_factor_embedding, col_nmf_embedding), axis=1)
+            col_normal_embedding_10000 = col_normal_embedding[1:,:]
+
+            row_graph_embedding = np.load(args.graph_embedding_row_path)
+            col_graph_embedding = np.load(args.graph_embedding_col_path)
+            scale_row = ( np.sum(np.square(row_normal_embedding_10000)) ) / ( np.sum(np.square(row_graph_embedding)) )
+            scale_row = np.sqrt(scale_row)
+            scale_col = ( np.sum(np.square(col_normal_embedding_10000)) ) / ( np.sum(np.square(col_graph_embedding)) )
+            scale_col = np.sqrt(scale_col)
+            row_graph_embedding = row_graph_embedding * scale_row
+            col_graph_embedding = col_graph_embedding * scale_col
+            #row_graph_embedding = np.load(args.graph_embedding_row_path) * args.graph_embedding_scale[0]
+            #col_graph_embedding = np.load(args.graph_embedding_col_path) * args.graph_embedding_scale[1]
             append_row = np.zeros((1, args.graph_embedding_dim))
             row_graph_embedding = np.concatenate( (append_row, row_graph_embedding), axis=0 )
             col_graph_embedding = np.concatenate( (append_row, col_graph_embedding), axis=0 )
