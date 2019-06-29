@@ -18,6 +18,9 @@ tf.app.flags.DEFINE_string('tf_records_test_path',
 tf.app.flags.DEFINE_string('checkpoints_path', os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'checkpoints/model.ckpt')), 
                            'Path for the test data.')
 
+tf.app.flags.DEFINE_string('ac_kind', "tanh", 
+                           'activation kind.')
+
 tf.app.flags.DEFINE_integer('num_epoch', 20,
                             'Number of training epochs.')
 
@@ -26,7 +29,7 @@ tf.app.flags.DEFINE_integer('batch_size', 16,
 
 tf.app.flags.DEFINE_float('learning_rate',0.00005,
                           'Learning_Rate')
-tf.app.flags.DEFINE_float('learning_rate_decay',1,
+tf.app.flags.DEFINE_float('learning_rate_decay',0.9,
                           'Learning_Rate decay')
 
 tf.app.flags.DEFINE_boolean('l2_reg', True,
@@ -98,6 +101,7 @@ def main(_):
                 for batch_nr in range(num_batches):
                     
                     x_train_,_, loss_,outputs_=sess.run((x_train,train_op, train_loss_op,outputs_op))
+                    
                     train_loss+=loss_
                     #print(x_train_)
                     #print(outputs_)
@@ -111,9 +115,9 @@ def main(_):
                     #print(mae_)
                     #print(pred)
                     #print(labels)
-
-                    test_loss.append(loss_)
-                    mae.append(mae_)
+                    if loss_>0:
+                        test_loss.append(loss_)
+                        mae.append(mae_)
                 
                 sess.run(model.learning_rate_op)
 
@@ -121,7 +125,7 @@ def main(_):
                     
                     
                 print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f, mean_abs_error: %.3f'
-                      %(epoch,(train_loss/num_batches),np.mean(test_loss), np.mean(mae)))
+                      %(epoch,(train_loss/num_batches),np.sqrt(np.mean(test_loss)), np.mean(mae)))
                 
                 if np.mean(mae)<1:
                     saver.save(sess, FLAGS.checkpoints_path)
