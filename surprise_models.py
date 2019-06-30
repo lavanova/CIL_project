@@ -491,7 +491,7 @@ def surprise_model(item=True, user=True, slope=True, svdp=True, nmf=True, coclus
     if coclustering:
         name = "CoClustering"
         CoClusteringsuprise(train, val, test, name, n_cltr_u=3, n_cltr_i=3,
-                            n_epochs=50)
+                            n_epochs=40)
 
 
 if __name__ == "__main__":
@@ -511,4 +511,4 @@ if __name__ == "__main__":
     #           reg_bi=0.02, lr_bu=0.005, lr_bi=0.005, init_low=0, init_high=1)
     name = "CoClustering"
     CoClusteringsuprise(train, val, test, name, n_cltr_u=3, n_cltr_i=3,
-                        n_epochs=50)
+                        n_epochs=40)
