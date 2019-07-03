@@ -48,8 +48,8 @@ def svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_row
         dense_model(model=SVDBaseline, fcn=loadfcns[i], valopath=valopath, testopath=testopath)
 
 
-def surprise_main(item=True, user=True, slope=True, svdp=True):
-    surprise_model(item=item, user=user, slope=slope, svdp=svdp)
+def surprise_main(item=True, user=True, slope=True, svdp=True, nmf=True, coclustering=True):
+    surprise_model(item=item, user=user, slope=slope, svdp=svdp, nmf=nmf, coclustering=coclustering)
 
 
 def ALS_main(small=True, medium=True, big=True):
@@ -69,4 +69,4 @@ def ALS_main(small=True, medium=True, big=True):
 if __name__ == "__main__":
     svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust'])
     ALS_main(small=True, medium=True, big=True)
-    surprise_main(item=True, user=True, slope=True, svdp=True)
+    surprise_main(item=True, user=True, slope=True, svdp=True, nmf=True, coclustering=True)
