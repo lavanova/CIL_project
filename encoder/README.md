@@ -10,7 +10,7 @@ sh init_encoder.sh
 * `tf_record_writer.py` -writing the training data (data_train.csv) into binary TF_Records
 * `dataset.py` -buildind the input pipeline for training data, validation data and test data.
 * `util.py` - utility methods
-* `parameters..py` - parameters
+* `parameters.py` - parameters
 * `init.sh` - creating data dir
 
 ## Training Process
