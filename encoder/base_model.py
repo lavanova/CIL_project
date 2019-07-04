@@ -1,3 +1,4 @@
+#base model
 import tensorflow as tf
 def activation(input, kind):
   #print("Activation: {}".format(kind))

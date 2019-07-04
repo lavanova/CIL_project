@@ -1,3 +1,4 @@
+# Writes the .txt training and testing data into binary TF_Records.'''
 import tensorflow as tf
 import sys
 import os
@@ -44,40 +45,6 @@ def bytes_feature(value):
 
 
 def main():
-    ''' Writes the .txt training and testing data into binary TF_Records.'''
-
-    '''SAMPLES_PER_FILES=100
-    
-    training_set, test_set=get_dataset_1M()
-
-    for data_set, name, dir_ in zip([training_set, test_set], ['train', 'test'], [TF_RECORD_TRAIN_PATH, TF_RECORD_TEST_PATH]):
-        
-        num_samples=len(data_set)
-        i = 0
-        fidx = 1
-
-        while i < num_samples:
-           
-            tf_filename = _get_output_filename(dir_, fidx,  name=name)
-            print(tf_filename)
-            
-            with tf.python_io.TFRecordWriter(tf_filename) as tfrecord_writer:
-                
-                j = 0
-                
-                while i < num_samples and j < SAMPLES_PER_FILES:
-                    
-                    sys.stdout.write('\r>> Converting sample %d/%d' % (i+1, num_samples))
-                    sys.stdout.flush()
-    
-                    sample = data_set[i]
-                    _add_to_tfrecord(sample, tfrecord_writer)
-                    
-                    i += 1
-                    j += 1
-                fidx += 1
-
-    print('\nFinished converting the dataset!')'''
     SAMPLES_PER_FILES=100
     train_data, train_mask, val_data, val_mask=LoadFixedValDataMask()
     #train_data, train_mask, val_data, val_mask=LoadTrainValDataMask(valper=0.1)

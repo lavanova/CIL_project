@@ -54,13 +54,12 @@ class TrainModel(BaseModel):
     
     def _test_loss(self, x_train, x_test):
         
-        ''' Computing the loss during the validation time.
+        ''' Computing the predicting result.
     		
     	  @param x_train: training data samples
     	  @param x_test: test data samples
     		
     	  @return networks predictions
-    	  @return root mean squared error loss between the predicted and actual ratings
     	  '''
         
         outputs=self.inference(x_train,is_training=False) # use training sample to make prediction
