@@ -95,6 +95,10 @@ Then you can go to train our models.
 ```
 sh train_classical.sh
 ```
+or
+```
+bsub -n 4 -W 24:00 -R "rusage[mem=4096, ngpus_excl_p=1]" sh train_classical.sh
+```
 Then you will find classical models' predictions on validation set and Kaggle's test set in directories `cache/` and `test/` respectively.  
 Before going to train neural models, if you want to see the performance of blending non-neural classical models, you can run `blender.sh`.
 ```
