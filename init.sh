@@ -22,3 +22,7 @@ cd neucf
 sh init.sh
 cd ../
 
+cd encoder
+sh init_encoder.sh
+cd ../
+
