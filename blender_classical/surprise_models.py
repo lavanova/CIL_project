@@ -201,7 +201,7 @@ def SVDsuprise(train, validation, test, fn, **kwargs):
 
 def NMFsuprise(train, validation, test, fn, **kwargs):
     """
-    SVD++ from library Surprise
+    NMF from library Surprise
     """
     # Get parameters
     n_factors = kwargs['n_factors']
@@ -215,8 +215,6 @@ def NMFsuprise(train, validation, test, fn, **kwargs):
     lr_bi = kwargs['lr_bi']
     init_low = kwargs['init_low']
     init_high = kwargs['init_high']
-
-
 
     # First, we need to dump the pandas DF into files
     train_file = 'tmp_train.csv'
@@ -295,14 +293,12 @@ def NMFsuprise(train, validation, test, fn, **kwargs):
 
 def CoClusteringsuprise(train, validation, test, fn, **kwargs):
     """
-    SVD++ from library Surprise
+    coclustering from library Surprise
     """
     # Get parameters
     n_cltr_u = kwargs['n_cltr_u']
     n_cltr_i = kwargs['n_cltr_i']
     n_epochs = kwargs['n_epochs']
-
-
 
     # First, we need to dump the pandas DF into files
     train_file = 'tmp_train.csv'
@@ -376,12 +372,12 @@ def CoClusteringsuprise(train, validation, test, fn, **kwargs):
     test_submission.to_csv(test_fn, index=False)
     print("Writing validation file:")
     val_submission.to_csv(val_fn, index=False)
+
 def slopeOne(train, validation, test, fn):
     """
     slopeOne from library Surprise
     """
     # Get parameters
-
     # First, we need to dump the pandas DF into files
     train_file = 'tmp_train.csv'
     test_file = 'tmp_test.csv'
@@ -434,7 +430,6 @@ def slopeOne(train, validation, test, fn):
             vpred[i] = 1
         else:
             vpred[i] = val
-
     # Copy the test
     test_df = test.copy()
     test_df.Rating = tpred
