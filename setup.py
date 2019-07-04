@@ -38,6 +38,7 @@ setup(
         'progress',
         'torch',
         'pandas',
-        'scikit-learn==0.21.2'
+        'scikit-learn==0.21.2',
+        'scikit-surprise'
     ],
 )
