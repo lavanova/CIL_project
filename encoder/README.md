@@ -11,13 +11,9 @@ sh init_encoder.sh
 * `dataset.py` -reading the tfrecord
 
 ## Training Process
-Simply run twice
+Simply run 
 ```
 python training.py
 ```
 ## Output
-The output will be in Upper level directory:test and cache. The result will then be used for blending. Since we run 
-```
-python training.py
-```
-twice, there will be two csv files in each directory
+The output will be in upper level directory:test and cache. The result will then be used for blending. 
