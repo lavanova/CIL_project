@@ -70,16 +70,49 @@ After doing initialization in previous section, you can see our repository has f
 
 Our blending method blends 16 classical models and 14 neural network models, it takes several hours to train models from scratch. So here we provide a way to reproduce our blending results without training models. To reproduce results from scratch, please go to next section `Reproduce results from scratch` where you can train all our models from scratch.
 
-To reproduce blending results without training models, first download the predictions 
+To reproduce blending results without training models, first download all the single models' predictions on validation set and Kaggle's test set. 
+```
+sh download_results.sh
+```
+Then blend single models' predictions on Kaggle's test set based on their predictions on validation set.
+```
+sh blender.sh
+```
+Then you can find a `out.csv` under directory `blend_result/`. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see 0.97102 RMSE on private test set and 0.96886 RMSE on public test set.
 
+## Reproduce blending results from scratch
 
+If you just go through section `Reproduce blending results without training models`, before going to reproduce blending results from scratch, you have to do following cleaning work (You can't skip this cleaning process, otherwise there will be 60 models. In our blending, there are 16 classical models and 14 neural models summing up to 30 models).
+```
+rm cache/*
+rm test/*
+rm blend_result/*
+```
+Then you can go to train our models.
 
+### Train non-neural classical models
+```
+sh train_classical.sh
+```
+Then you will find classical models' predictions on validation set and Kaggle's test set in directories `cache/` and `test/` respectively.  
+Before going to train neural models, if you want to see the performance of blending non-neural classical models, you can run `blender.sh`.
+```
+sh blender.sh
+```
+Then you can find a `out.csv` under directory `blend_result/`. This is the predictions of blending classical models on Kaggle's test set. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97808 RMSE on private test set and ~0.97631 on public test set(result won't be exactly same, but it will be close to what I post here)
 
+### Train neural models
+```
+bsub -n 4 -W 24:00 -R "rusage[mem=4096, ngpus_excl_p=1]" sh train_neural.sh
+```
+Then you will find neural models' predictions on validation set and Kaggle's test set in directories `cache/` and `test/` respectively.  
+Then you can blend neural models and non-neural classical models to reproduce our best performance.
+```
+sh blender.sh
+```
+Then you can find a `out.csv` under directory `blend_result/`. This is the predictions on Kaggle's test set of blending classical models and neural models. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97102 RMSE on private test set and ~0.96886 on public test set(result won't be exactly same, but it will be close to what I post here)
 
-
-
-
-Recommendation system
-
-Data is not in the repository
-Data available: https://inclass.kaggle.com/c/cil-collab-filtering-2019
+## Authors
+CIL Team: Project Passline  
+Xinyuan Huang, Chengyuan Yao, Qifan Guo, Hanxue Liang  
+ETH Zurich
