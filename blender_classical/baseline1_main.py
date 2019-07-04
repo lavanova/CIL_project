@@ -72,6 +72,10 @@ def ALS_main(small=True, medium=True, big=True):
 
 if __name__ == "__main__":
     CreateTrainValTruth()
+    print("start svd!")
     svd_main(model_names = ['svd_mean','svd_col','svd_coladj','svd_row','svd_rowadj','svd_heuristic', 'svd_rateadjust'])
+    print("svd finish, start als!")
     ALS_main(small=True, medium=True, big=True)
+    print("als finish, start surprise models!")
     surprise_main(item=True, user=True, slope=True, svdp=True, nmf=True, coclustering=True)
+    print("classical models finish successfully!")

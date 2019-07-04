@@ -1,4 +1,4 @@
 cd blender_classical
-python blender.python
+python blender.py
 cd ..
 mv out.csv ./blend_result/out.csv
