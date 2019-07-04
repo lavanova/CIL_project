@@ -18,6 +18,12 @@ else
 	mkdir test
 fi
 
+if [ -d ./blend_result ]; then
+	echo "blend_result directory already exist"
+else
+	mkdir blend_result
+fi
+
 cd neucf
 sh init.sh
 cd ../
