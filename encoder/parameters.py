@@ -1,8 +1,8 @@
 # defining paths and paramters
 
-RAWDATA_PATH = './data/data_train.csv'
-SAMPLECSV_PATH = './data/sampleSubmission.csv'
-VALTRUTH_PATH = 'data/valTruth.csv'
+RAWDATA_PATH = '../data/data_train.csv'
+SAMPLECSV_PATH = '../data/sampleSubmission.csv'
+VALTRUTH_PATH = '../data/valTruth.csv'
 OUTPUTCSV_PATH = './out.csv'
 MATRAW_PATH = './cache/matraw.npy'
 MASK_PATH = './cache/mask.npy'

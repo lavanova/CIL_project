@@ -18,16 +18,16 @@ tf.app.flags.DEFINE_string('tf_records_test_path',
 tf.app.flags.DEFINE_string('checkpoints_path', os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'checkpoints/model.ckpt')), 
                            'Path for the test data.')
 
-tf.app.flags.DEFINE_string('ac_kind', "tanh", 
+tf.app.flags.DEFINE_string('ac_kind', "relu", 
                            'activation kind.')
 
-tf.app.flags.DEFINE_integer('num_epoch', 20,
+tf.app.flags.DEFINE_integer('num_epoch', 10,
                             'Number of training epochs.')
 
 tf.app.flags.DEFINE_integer('batch_size', 16,
                             'Size of the training batch.')
 
-tf.app.flags.DEFINE_float('learning_rate',0.00005,
+tf.app.flags.DEFINE_float('learning_rate',0.001,
                           'Learning_Rate')
 tf.app.flags.DEFINE_float('learning_rate_decay',0.9,
                           'Learning_Rate decay')
@@ -37,7 +37,7 @@ tf.app.flags.DEFINE_boolean('l2_reg', True,
                             )
 tf.app.flags.DEFINE_float('lambda_',0.001,
                           'Wight decay factor.')
-tf.app.flags.DEFINE_float('drop_out_prob',0.5,
+tf.app.flags.DEFINE_float('drop_out_prob',0.3,
                           'drop out prob.')
 
 tf.app.flags.DEFINE_integer('num_v', 1000,
@@ -55,7 +55,7 @@ tf.app.flags.DEFINE_integer('num_layer2', 128,
 
 tf.app.flags.DEFINE_boolean('constrain', True,
                             'if constrained.')
-tf.app.flags.DEFINE_boolean('batch_normalization', True,
+tf.app.flags.DEFINE_boolean('batch_normalization', False,
                             'batch_normalization.')
 FLAGS = tf.app.flags.FLAGS
 def main(_):
@@ -97,24 +97,18 @@ def main(_):
                 sess.run(iter_train.initializer)
                 sess.run(iter_train_infer.initializer)
                 sess.run(iter_test.initializer)
-                
+                #training
                 for batch_nr in range(num_batches):
                     
                     x_train_,_, loss_,outputs_=sess.run((x_train,train_op, train_loss_op,outputs_op))
                     
                     train_loss+=loss_
-                    #print(x_train_)
-                    #print(outputs_)
-                    #print(loss_)
                     
-                
+                    
+                #validation
                 for i in range(FLAGS.num_samples):
                     
                     pred, labels_, loss_, mae_=sess.run((prediction, labels, test_loss_op,mae_ops))
-                    #print(loss_)
-                    #print(mae_)
-                    #print(pred)
-                    #print(labels)
                     if loss_>0:
                         test_loss.append(loss_)
                         mae.append(mae_)
@@ -133,6 +127,7 @@ def main(_):
                 train_loss=0
                 test_loss=[]
                 mae=[]
+            #write the result to csv
             sess.run(iter_train.initializer)
             sess.run(iter_train_infer.initializer)
             sess.run(iter_test.initializer) 
@@ -147,8 +142,12 @@ def main(_):
             preds=preds.reshape(10000,1000)
             #preds=denormalizeData(preds,3.8572805008190647,4.016329062225046)
             #WriteToCSV(preds,path='encoder.csv')
-            WriteToCSV(preds, path='cache/default', sample=parameters.VALTRUTH_PATH)
-            WriteToCSV(preds, path='test/default', sample=parameters.SAMPLECSV_PATH)
+            if os.path.exists('../cache/encoder') and os.path.exists('../test/encoder'):
+                WriteToCSV(preds, path='../cache/encoder_2', sample=parameters.VALTRUTH_PATH)
+                WriteToCSV(preds, path='../test/encoder_2', sample=parameters.SAMPLECSV_PATH)
+            else:
+                WriteToCSV(preds, path='../cache/encoder', sample=parameters.VALTRUTH_PATH)
+                WriteToCSV(preds, path='../test/encoder', sample=parameters.SAMPLECSV_PATH)
                     
 if __name__ == "__main__":
     
