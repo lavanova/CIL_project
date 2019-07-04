@@ -11,6 +11,7 @@ sh init_encoder.sh
 * `dataset.py` -buildind the input pipeline for training data, validation data and test data.
 * `util.py` - utility methods
 * `parameters..py` - parameters
+* `init.sh` - creating data dir
 
 ## Training Process
 Simply run 
