@@ -89,7 +89,7 @@ rm cache/*
 rm test/*
 rm blend_result/*
 ```
-If it prompt `rm: remove write-protected regular file......`, type `y` to remove that file. Otherwise that file won't get removed.  
+If it prompt something like `rm: remove write-protected regular file 'filename'?`, type `y` to remove that file. Otherwise that file won't get removed.  
 Then you can go to train our models.
 
 ### Train non-neural classical models
