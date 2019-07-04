@@ -6,9 +6,11 @@ sh init_encoder.sh
 ```
 ## Framework Structure
 * `training.py` - the invoking script
-* `train_model.py & base_model` - model implementations
-* `tf_record_writer.py` -writing the csv file to tfrecord 
-* `dataset.py` -reading the tfrecord
+* `train_model.py & base_model.py` - model implementations
+* `tf_record_writer.py` -writing the training data (data_train.csv) into binary TF_Records
+* `dataset.py` -buildind the input pipeline for training data, validation data and test data.
+* `util.py` - utility methods
+* `parameters..py` - parameters
 
 ## Training Process
 Simply run 
