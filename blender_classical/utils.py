@@ -195,7 +195,7 @@ def CreateTrainValTruth(valid_ratio=0.1, inpath = parameters.RAWDATA_PATH):
     df.to_csv("../data/valTruth.csv", index=False)
     df = pd.DataFrame({'Id': rcstrs_train, 'Prediction': preds_train})
     df.to_csv("../data/trainTruth.csv", index=False)
-    print("Load fixed train validation data mask complete")
+    print("valTruth, trainTruth generation complete")
     return train_data, train_mask, val_data, val_mask
 
 
