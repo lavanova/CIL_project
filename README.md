@@ -108,6 +108,19 @@ sh blender.sh
 Then you can find a `out.csv` under directory `blend_result/`. This is the predictions of blending classical models on Kaggle's test set. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97808 RMSE on private test set and ~0.97631 on public test set(result won't be exactly same, but it will be close to what I post here)
 
 ### Train neural models
+First train locally linear embedding, factor analysis embedding, spectral embedding and non-negative matrix factorization embedding which are used as external embeddings of neural network.
+```
+cd neucf
+python embedding.py
+cd ..
+```
+Or you can download these four embeddings directly which have already been trained.
+```
+cd neucf
+sh download_embedding.sh
+cd ..
+```
+Then you can start training neural models.
 ```
 bsub -n 4 -W 24:00 -R "rusage[mem=4096, ngpus_excl_p=1]" sh train_neural.sh
 ```
