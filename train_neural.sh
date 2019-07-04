@@ -1,4 +1,5 @@
 cd encoder
+python tf_record_writer.py
 python training.py
 python training.py
 cd ..
