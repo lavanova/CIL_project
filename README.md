@@ -23,6 +23,7 @@ git clone https://github.com/lavanova/CIL_project.git
 ```
 Install virtualenvwrapper if you haven't done so yet
 ```
+pip3 install --user virtualenv
 pip3 install --user virtualenvwrapper
 source $HOME/.local/bin/virtualenvwrapper.sh
 ```
