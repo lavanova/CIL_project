@@ -34,10 +34,6 @@ echo "test directory already exist"
 else
 mkdir data/tf_records/test
 fi
-#vi data/tf_records/train/train_001.tfrecord
-#vi data/tf_records/test/test_001.tfrecord
-python tf_record_writer.py
-python training.py
-python training.py
+
 
 
