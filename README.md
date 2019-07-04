@@ -16,7 +16,28 @@ load some modules
 module load python_gpu/3.6.4 hdf5 eth_proxy
 module load cudnn/7.2
 ```
-Install
+Clone the git repo
+```
+cd ~
+git clone https://github.com/lavanova/CIL_project.git
+```
+Install virtualenvwrapper if you haven't done so yet
+```
+pip3 install --user virtualenvwrapper
+source $HOME/.local/bin/virtualenvwrapper.sh
+```
+Create a virtual environment
+```
+mkvirtualenv "cil"
+```
+The virtual environment is by default activated. You can disable or enable it by using
+```
+deactivate
+workon "cil"
+```
+
+
+
 
 
 
