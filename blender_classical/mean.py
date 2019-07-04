@@ -1,3 +1,7 @@
+'''
+mean.py: This file fills the CF matrix with different types of means
+'''
+
 from utils import *
 def WriteToCSV_movie(data, path = parameters.OUTPUTCSV_PATH, sample = parameters.SAMPLECSV_PATH): # expect the input to be a matrix
     print("writing result to csv")

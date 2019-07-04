@@ -1,3 +1,6 @@
+'''
+cross_validation.py: implemented cross validation as model evaluation (for SVD and ALS only)
+'''
 import pandas as pd
 from sklearn.model_selection import KFold
 from utils import *

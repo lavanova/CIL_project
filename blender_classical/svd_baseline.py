@@ -1,3 +1,7 @@
+'''
+svd_baseline.py: Implement SVD functions as well as methods of filling up matrix
+'''
+
 import numpy as np
 import parameters
 from utils import *

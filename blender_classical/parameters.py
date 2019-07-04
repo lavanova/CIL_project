@@ -1,3 +1,6 @@
+'''
+parameters.py: MACROS for paths and parameters
+'''
 # defining paths and paramters
 
 RAWDATA_PATH = '../data/data_train.csv'

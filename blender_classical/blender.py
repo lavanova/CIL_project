@@ -1,3 +1,6 @@
+'''
+blender.py: implemented the blender function
+'''
 import scipy.optimize as sco
 import numpy as np
 from utils import *
@@ -93,6 +96,7 @@ def applyblender(weight_dic, opath=parameters.OUTPUTCSV_PATH, args=None):
 
 if __name__ == '__main__':
     # print(checkdist())
+    CreateTrainValTruth()
     args = parse_args()
     print(type(args.models))
     print(args.models)

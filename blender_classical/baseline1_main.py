@@ -1,3 +1,6 @@
+'''
+baseline1_main.py: main function for generating predictions of classical models (16 variants)
+'''
 import pandas as pd
 from sklearn.model_selection import KFold
 from utils import *

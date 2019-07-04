@@ -1,3 +1,7 @@
+'''
+surprise.py: implemented different models using surprise libraray
+'''
+
 from surprise import *
 import numpy as np
 import pandas as pd

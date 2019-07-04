@@ -1,3 +1,6 @@
+'''
+util.py: implemented utility functions for classical models 
+'''
 import numpy as np
 import parameters
 import csv
@@ -157,6 +160,43 @@ def LoadFixedValDataMask(valid_ratio=0.1, inpath = parameters.RAWDATA_PATH, cach
     print("Load fixed train validation data mask complete")
     return train_data, train_mask, val_data, val_mask
 
+
+def CreateTrainValTruth(valid_ratio=0.1, inpath = parameters.RAWDATA_PATH):
+    rawdata = pd.read_csv(inpath)
+    train_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    train_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+    val_data = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.float32 )
+    val_mask = np.zeros( (parameters.NROWS, parameters.NCOLS), dtype=np.int )
+
+    sample_num = len(rawdata.values)
+    index = getPermutedIndices(sample_num)
+
+    values = rawdata.values[index] # shuffled values
+    valid_num = int(valid_ratio * sample_num) # number of validation
+
+    rcstrs_val = []
+    preds_val = []
+
+    rcstrs_train = []
+    preds_train = []
+    for ind, i in enumerate(values):
+        r, c = GetRC(i[0])
+        if ind < valid_num:
+            rcstrs_val.append(i[0])
+            preds_val.append(i[1])
+            val_data[r,c] = i[1]
+            val_mask[r,c] = 1
+        else:
+            train_data[r,c] = i[1]
+            train_mask[r,c] = 1
+            rcstrs_train.append(i[0])
+            preds_train.append(i[1])
+    df = pd.DataFrame({'Id': rcstrs_val, 'Prediction': preds_val})
+    df.to_csv("../data/valTruth.csv", index=False)
+    df = pd.DataFrame({'Id': rcstrs_train, 'Prediction': preds_train})
+    df.to_csv("../data/trainTruth.csv", index=False)
+    print("Load fixed train validation data mask complete")
+    return train_data, train_mask, val_data, val_mask
 
 
 '''
