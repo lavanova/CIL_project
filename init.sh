@@ -17,3 +17,8 @@ if [ -d ./test ]; then
 else
 	mkdir test
 fi
+
+cd neucf
+sh init.sh
+cd ../
+

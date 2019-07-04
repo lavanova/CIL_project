@@ -10,6 +10,7 @@ import pandas as pd
 from utils import early_stopping
 from tqdm import tqdm
 import sys
+from shutil import copyfile
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run NGCF.")
@@ -701,6 +702,7 @@ if __name__ == '__main__':
                 break
             if valid_rmse == cur_best_pre_0 and args.save_flag == 1:
                 saver.save(sess, os.path.join(args.log_path,'model'), global_step=i+1, write_meta_graph=False)
+                
                 input_feed = {model_valid.node_dropout: [0.]*len(args.layer_size),
                               model_valid.mess_dropout: [0.]*len(args.layer_size)}
                 output_feed = [model_valid.ua_embeddings,
@@ -708,9 +710,10 @@ if __name__ == '__main__':
                 ua_embeddings, ia_embeddings = sess.run(output_feed, 
                                                         feed_dict=input_feed)
                 np.save(os.path.join(args.log_path)+'row_embedding_'+str(i+1)+'.npy', ua_embeddings)
+                np.save(os.path.join(args.log_path)+'row_embedding.npy', ua_embeddings)
 
                 np.save(os.path.join(args.log_path)+'col_embedding_'+str(i+1)+'.npy', ia_embeddings)
-
+                np.save(os.path.join(args.log_path)+'col_embedding.npy', ia_embeddings)
                 output_prediction = None
                 for j in tqdm(range( math.ceil( len(data_generator.rcstrs_output) / args.batch_size) )):
                     predict = model_output.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
@@ -732,6 +735,9 @@ if __name__ == '__main__':
                 output_valid_prediction = np.reshape(output_valid_prediction, (output_valid_prediction.shape[0],))
                 df = pd.DataFrame( {'Id': data_generator.rcstrs_output_valid,'Prediction': output_valid_prediction} )
                 df.to_csv(os.path.join(args.log_path, 'output_valid' + str(i+1)+".csv" ),index=False)
+                if args.end_to_end:
+                    copyfile( os.path.join(args.log_path, 'output_valid' + str(i+1)+".csv" ) , 
+                              os.path.join("../cache", args.log_path.split("/")[-2] ) )
                 test_prediction = None
                 for j in tqdm(range(math.ceil( len(data_generator.rcstrs_test) / args.batch_size))):
                     predict = model_test.step(sess, [0.]*len(args.layer_size), [0.]*len(args.layer_size), dropout_keep_prob=1, isTesting=True)
@@ -744,6 +750,9 @@ if __name__ == '__main__':
                 # data frame is reconstructed since the direct modification is too slow
                 df = pd.DataFrame({'Id': data_generator.rcstrs_test,'Prediction': test_prediction})
                 df.to_csv(os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ),index=False)
+                if args.end_to_end:
+                    copyfile( os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ) , 
+                                            os.path.join("../test", args.log_path.split("/")[-2]) )
                 sess.run([data_generator.iterator_test.initializer,
                           data_generator.iterator_output.initializer,
                           data_generator.iterator_output_valid.initializer])

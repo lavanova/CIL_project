@@ -8,6 +8,7 @@ import math
 import pandas as pd
 from tqdm import tqdm
 from utils import early_stopping
+from shutil import copyfile
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run NeuMF.")
@@ -242,7 +243,7 @@ def _train(args):
                 output_prediction = np.reshape(output_prediction, (output_prediction.shape[0],))
                 df = pd.DataFrame( {'Id': rcstrs_output,'Prediction': output_prediction} )
                 df.to_csv(os.path.join(args.log_path, 'output' + str(i+1)+".csv" ),index=False)
-
+                #copyfile( os.path.join(args.log_path, 'output' + str(i+1)+".csv" ) , "../" )
                 output_valid_prediction = None
                 for j in range( math.ceil( len(rcstrs_output_valid) / args.batch_size) ):
                     predict = model_output_valid.step(sess, isTesting=True, dropout_keep_prob=1)
@@ -253,6 +254,8 @@ def _train(args):
                 output_valid_prediction = np.reshape(output_valid_prediction, (output_valid_prediction.shape[0],))
                 df = pd.DataFrame( {'Id': rcstrs_output_valid,'Prediction': output_valid_prediction} )
                 df.to_csv(os.path.join(args.log_path, 'output_valid' + str(i+1)+".csv" ),index=False)
+                copyfile( os.path.join(args.log_path, 'output_valid' + str(i+1)+".csv" ) , 
+                                       os.path.join("../cache", args.log_path.split("/")[-2] ) )
                 test_prediction = None
                 for j in range(math.ceil(row_col_prediction.shape[0] / args.batch_size)):
                     predict = model_test.step(sess, isTesting=True, dropout_keep_prob=1)
@@ -265,6 +268,8 @@ def _train(args):
                 # data frame is reconstructed since the direct modification is too slow
                 df = pd.DataFrame({'Id': rcstrs,'Prediction': test_prediction})
                 df.to_csv(os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ),index=False)
+                copyfile( os.path.join(args.log_path, 'submission' + str(i+1)+".csv" ) , 
+                                       os.path.join("../test", args.log_path.split("/")[-2] ) )
                 sess.run([iterator_test.initializer,
                         iterator_output.initializer,
                         iterator_output_valid.initializer])
