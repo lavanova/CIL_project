@@ -21,3 +21,6 @@ python training.py
 ```
 ## Output
 The output will be in upper level directory:test and cache. The result will then be used for blending. 
+## Reference
+Our `AutoEncoder` model's implementation is based on [link](https://github.com/artem-oppermann/Deep-Autoencoders-For-Collaborative-Filtering)
+
