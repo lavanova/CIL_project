@@ -9,7 +9,7 @@ sh init_encoder.sh
 * `train_model.py & base_model.py` - model implementations
 * `tf_record_writer.py` -writing the training data (data_train.csv) into binary TF_Records
 * `dataset.py` -buildind the input pipeline for training data, validation data and test data.
-* `util.py` - utility methods
+* `utils.py` - utility methods
 * `parameters.py` - parameters
 * `init_encoder.sh` - creating data dir
 
