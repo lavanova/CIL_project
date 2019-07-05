@@ -16,6 +16,7 @@ sh init_encoder.sh
 ## Training Process
 Simply run 
 ```
+python tf_record_writer.py
 python training.py
 ```
 ## Output
