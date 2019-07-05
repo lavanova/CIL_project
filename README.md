@@ -41,6 +41,14 @@ With the virtual environment activated, go to our project folder and install the
 cd CIL_project
 python setup.py install
 ```
+## Note
+After you set up the environment for first time, you have to do following to recover environments everytime you login to leonhard.
+```
+module load python_gpu/3.6.4 hdf5 eth_proxy
+module load cudnn/7.2
+source $HOME/.local/bin/virtualenvwrapper.sh
+workon "cil"
+```
 
 ## Initialization and download the dataset
 
