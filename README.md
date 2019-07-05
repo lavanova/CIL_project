@@ -73,7 +73,8 @@ After doing initialization in previous section, you can see our repository has f
 * `init.sh` - do some initialization
 * `setup.py` - download dependencies
 * `train_classical.sh` - train all our classical non-neural models and store models' predictions on our validation set and Kaggle's test set under directory `cache` and `test` respectively. This script will run `blender_classical/baseline1_main.py`.
-* `train_neural.sh` - train all our neural network based models and store models' predictions on our validation set and Kaggle's test set under directory `cache` and `test` respectively. This scripy will run `encoder/training.py` and `neucf/train.sh`.  
+* `train_neural.sh` - train all our neural network based models and store models' predictions on our validation set and Kaggle's test set under directory `cache` and `test` respectively. This scripy will run `encoder/training.py` and `neucf/train.sh`. 
+
 For sub-directories, you can refer to their `README.md` for more information.
 
 ## Reproduce blending results without training models
