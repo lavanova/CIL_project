@@ -119,7 +119,7 @@ sh blender.sh
 Then you can find a `out.csv` under directory `blend_result/`. This is the predictions of blending classical models on Kaggle's test set. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97808 RMSE on private test set and ~0.97631 on public test set(result won't be exactly same, but it will be close to what I post here)
 
 ### Train neural models
-First train locally linear embedding, factor analysis embedding, spectral embedding and non-negative matrix factorization embedding which are used as external embeddings of neural network.
+First train locally linear embedding, factor analysis embedding, spectral embedding and non-negative matrix factorization embedding which are used as external embeddings of neural network.(it will take around 1 hour. And there will be no intermediate messages during training embeddings, so don't worry about whether something is going wrong, it will definitely finish around 1 hour)
 ```
 cd neucf
 python embedding.py
