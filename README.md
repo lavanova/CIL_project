@@ -140,6 +140,28 @@ sh blender.sh
 ```
 Then you can find a `out.csv` under directory `blend_result/`. This is the predictions on Kaggle's test set of blending classical models and neural models. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97102 RMSE on private test set and ~0.96886 on public test set(result won't be exactly same, but it will be close to what I post here)
 
+## Output file name and model name
+After training all the models, you will find their predictions on validation set and Kaggle's test set under directories `cache`
+and `test` respectively. For one specific model, it's output file names under `cache` and `test` are same, for example, `cache/ALS_big` and `test/ALS_big`.  
+For classical models, you can easily inference the `model name` of an output file. The `model name` are listed in Table I in our report.  
+For neural models, the one to one corresponding relationship between `file name` and `model name` are listed here.
+* `Auto-encoder`
+  * `encoder` - `Auto-encoder`
+  * `encoder` - `Auto-encoder`
+* `MLP_origin` with different training hyper parameters 
+  * `normal` - `MLP_origin` without learning rate(lr) decay during training
+  * `normal_decay1500` - `MLP_origin` with lr decay step 1500
+  * `normal_decay2500` - `MLP_origin` with lr decay step 2500
+  * `normal_decay3500` - `MLP_origin` with lr decay step 3500
+* `MLP_ngcfemb` with different training hyper parameters
+  * `normal_ngcfemb` - `MLP_ngcfemb` without lr decay during training
+  * `normal_ngcfemb_decay1500` - `MLP_ngcfemb` with lr decay step 1500
+  * `normal_ngcfemb_decay2500` - `MLP_ngcfemb` with lr decay step 2500
+  * `normal_ngcfemb_decay3500` - `MLP_ngcfemb` with lr decay step 3500
+* `basenn_8` - `NeuMF_8`
+* `basenn_16` - `NeuMF_16`
+* `ngcf_endtoend0` - `NGCF_endtoend0`
+* `ngcf_endtoend1` - `NGCF_endtoend1`
 ## Authors
 CIL Team: Project Passline  
 Xinyuan Huang, Chengyuan Yao, Qifan Guo, Hanxue Liang  
