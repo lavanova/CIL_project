@@ -162,8 +162,9 @@ For neural models, the one to one corresponding relationship between `file name`
 * `basenn_8` - `NeuMF_8`
 * `basenn_16` - `NeuMF_16`
 * `ngcf_endtoend0` - `NGCF_endtoend0`
-* `ngcf_endtoend1` - `NGCF_endtoend1`  
-You can also submit output files under directory `test` to see performance of every single model.
+* `ngcf_endtoend1` - `NGCF_endtoend1`
+## Evaluation for single model
+You can also submit output files under directory `test/` to see performance of every single model.
 ## Authors
 CIL Team: Project Passline  
 Xinyuan Huang, Chengyuan Yao, Qifan Guo, Hanxue Liang  
