@@ -21,3 +21,6 @@ predictions on validation set and Kaggle's test set under root's directories `ca
 * `train2.sh` - deprecated. other experiments, you don't have to use it.
 * `utils.py` - utility functions(early_stopping)
 
+## Reference
+Our `NGCF` model's implementation is based on [link](https://github.com/xiangwang1223/neural_graph_collaborative_filtering)
+
