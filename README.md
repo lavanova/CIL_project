@@ -141,8 +141,10 @@ Then you can blend neural models and non-neural classical models to reproduce ou
 sh blender.sh
 ```
 Then you can find a `out.csv` under directory `blend_result/`. This is the predictions on Kaggle's test set of blending classical models and neural models. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97102 RMSE on private test set and ~0.96886 on public test set(result won't be exactly same, but it will be close to what I post here)
+## Evaluation for blending model
+As I have mentioned, after training all the models and running `blender.sh`, you can find a `out.csv` under directory `blend_result/`. It is the predictions on Kaggle's test set of blending classical models and neural models. Use `scp` to copy the `out.csv` to your own machine, and submit it to Kaggle. You will see ~0.97102 RMSE on private test set and ~0.96886 on public test set(result won't be exactly same, but it will be close to what I post here)
 ## Evaluation for single model
-You can also submit output files under directory `test/` to see performance of every single model. Next section lists one to one corresponding relationship between `output file name` and their `model name`.
+You can also submit output files under directory `test/` on Kaggle to see public score and private score of every single model. Next section lists one to one corresponding relationship between `output file name` and their `model name`.
 ## Output file name and model name
 After training all the models, you will find their predictions on validation set and Kaggle's test set under directories `cache`
 and `test` respectively. For one specific model, it's output file names under `cache` and `test` are same, for example, `cache/ALS_big` and `test/ALS_big`.  
@@ -167,7 +169,7 @@ For classical models, the one to one corresponding relationship between `file na
   * `ALS_medium` - `ALS` with `factor 10`
   * `ALS_big` - `ALS` with `factor 20`
  
-For neural models, the one to one corresponding relationship between `file name` and `model name` are listed here.
+For neural models, the one to one corresponding relationship between `file name` and `model name` are listed here. The `model name` are listed in Table I in our report. 
 * `Auto-encoder`
   * `encoder` - `Auto-encoder`
   * `encoder2` - `Auto-encoder`
