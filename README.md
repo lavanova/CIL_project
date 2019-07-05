@@ -93,7 +93,7 @@ Then you can find a `out.csv` under directory `blend_result/`. Use `scp` to copy
 
 If you just go through section `Reproduce blending results without training models`, before going to reproduce blending results from scratch, you have to do following cleaning work (You can't skip this cleaning process, otherwise there will be 60 models. In our blending, there are 16 classical models and 14 neural models summing up to 30 models).
 ```
-rm cache/*
+rm -f cache/*
 rm test/*
 rm blend_result/*
 ```
