@@ -147,7 +147,7 @@ For classical models, you can easily inference the `model name` of an output fil
 For neural models, the one to one corresponding relationship between `file name` and `model name` are listed here.
 * `Auto-encoder`
   * `encoder` - `Auto-encoder`
-  * `encoder` - `Auto-encoder`
+  * `encoder2` - `Auto-encoder`
 * `MLP_origin` with different training hyper parameters 
   * `normal` - `MLP_origin` without learning rate(lr) decay during training
   * `normal_decay1500` - `MLP_origin` with lr decay step 1500
@@ -162,6 +162,7 @@ For neural models, the one to one corresponding relationship between `file name`
 * `basenn_16` - `NeuMF_16`
 * `ngcf_endtoend0` - `NGCF_endtoend0`
 * `ngcf_endtoend1` - `NGCF_endtoend1`
+You can also submit output files under directory `test` to see performance of every single model.
 ## Authors
 CIL Team: Project Passline  
 Xinyuan Huang, Chengyuan Yao, Qifan Guo, Hanxue Liang  
