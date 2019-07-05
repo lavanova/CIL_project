@@ -67,7 +67,7 @@ After doing initialization in previous section, you can see our repository has f
 * `encoder/` - implementation of Auto-encoder
 * `neucf/` - implementation of neural network based models except Auto-encoder. Auto-encoder is implemented in `encoder/`.
 * `rbm/` - implementation of Restricted Bolzmann Machine(RBM). But we don't use RBM.
-* `blender.sh` - this script will run `blender_classical/blender.py` to do blending. After running this script, you will find `out.csv` under directory `blend_result`. Then you can submit it to Kaggle to see the performance of our blending method. 
+* `blender.sh` - this script will run `blender_classical/blender.py` to do blending. It will put `out.csv` under directory `blend_result/`. Then you can submit `blend_result/out.csv` to Kaggle to see the performance of our blending method. 
 * `download_data.sh` - download dataset.
 * `download_results.sh` - this is used when you want to reproduce our blending results without training models. This script will download predictions on Kaggle's test set and our validation set of all our single models into directories `test/` and `cache/` respectively. 
 * `init.sh` - do some initialization
