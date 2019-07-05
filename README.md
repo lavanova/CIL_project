@@ -101,6 +101,7 @@ If it prompt something like `rm: remove write-protected regular file 'filename'?
 Then you can go to train our models.
 
 ### Train non-neural classical models
+To train non-neural classical models, it will take around 1.5 hours.
 ```
 sh train_classical.sh
 ```
@@ -122,13 +123,13 @@ cd neucf
 python embedding.py
 cd ..
 ```
-Or you can download these four embeddings directly which have already been trained.
+Or you can download these four embeddings directly from my polybox.
 ```
 cd neucf
 sh download_embedding.sh
 cd ..
 ```
-Then you can start training neural models.
+Then you can start training neural models.(The training will take around 9 hours)
 ```
 bsub -n 4 -W 24:00 -R "rusage[mem=4096, ngpus_excl_p=1]" sh train_neural.sh
 ```
